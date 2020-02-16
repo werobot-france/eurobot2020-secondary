@@ -1,4 +1,5 @@
 import pygame
+import time
 
 class Dualshock:
     pygame = None
@@ -84,12 +85,15 @@ class Dualshock:
         
     def startControllerLoop(self):
         print('Starting py game controller loop...')
-        
+        self.pygame.init()
         self.pygame.joystick.init()
         self.initController()
-        while True:
-            # Get events   
+        time.sleep(2)
+        running = True
+        while running:
             for event in pygame.event.get():
+                print(event.type)
+                
                 if event.type == self.pygame.JOYAXISMOTION:   
                     newValue = round(event.value, 3)
                     key = list(self.controllerAnalogValues.keys())[event.axis]
