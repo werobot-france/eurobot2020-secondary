@@ -1,5 +1,6 @@
 import pygame
 import time
+import event_emitter
 
 class Dualshock:
     pygame = None
@@ -45,9 +46,11 @@ class Dualshock:
 
     lastControllerActivityClock = 0
     
+    events = None
     
     def __init__(self):
         self.pygame = pygame
+        self.events = event_emitter.EventEmitter()
 
     def onControllerAnalog(self):
         #
@@ -92,54 +95,53 @@ class Dualshock:
         running = True
         while running:
             for event in pygame.event.get():
-                print(event.type)
-                
                 if event.type == self.pygame.JOYAXISMOTION:   
                     newValue = round(event.value, 3)
                     key = list(self.controllerAnalogValues.keys())[event.axis]
                     if self.controllerAnalogValues[key] != newValue:
                         # new value detected
                         self.controllerAnalogValues[key] = newValue
-                        self.onControllerAnalog()
-
+                        # dispatch a new event with all the analog values
+                        self.events.emit('analog_input', values=self.controllerAnalogValues)
+                        
                 if event.type == self.pygame.JOYBUTTONDOWN:
                     key = list(self.controllerDigitalValues.keys())[event.button]
                     if self.controllerDigitalValues[key] != True:
                         # new value detected
                         self.controllerDigitalValues[key] = True
-                        self.onControllerDigital()
+                        self.events.emit('digital_input', values=self.controllerDigitalValues)
 
                 elif event.type == self.pygame.JOYBUTTONUP:
                     key = list(self.controllerDigitalValues.keys())[event.button]
                     if self.controllerDigitalValues[key] != False:
                         # new value detected
                         self.controllerDigitalValues[key] = False
-                        self.onControllerDigital()
+                        self.events.emit('digital_input', values=self.controllerDigitalValues)
 
                 elif event.type == self.pygame.JOYHATMOTION:
                     if self.controllerHatValue[event.hat] != event.value:
                         if event.value == (0, 1):
                             self.controllerDigitalValues['up'] = True
-                            self.onControllerDigital()
+                            self.events.emit('digital_input', values=self.controllerDigitalValues)
 
                         elif event.value == (0, -1):
                             self.controllerDigitalValues['down'] = True
-                            self.onControllerDigital()
+                            self.events.emit('digital_input', values=self.controllerDigitalValues)
 
                         elif event.value == (1, 0):
                             self.controllerDigitalValues['right'] = True
-                            self.onControllerDigital()
+                            self.events.emit('digital_input', values=self.controllerDigitalValues)
 
                         elif event.value == (-1, 0):
                             self.controllerDigitalValues['left'] = True
-                            self.onControllerDigital()
+                            self.events.emit('digital_input', values=self.controllerDigitalValues)
 
                         elif event.value == (0, 0): 
                             self.controllerDigitalValues['up'] = False
                             self.controllerDigitalValues['down'] = False
                             self.controllerDigitalValues['right'] = False
                             self.controllerDigitalValues['left'] = False
-                            self.onControllerDigital()
+                            self.events.emit('digital_input', values=self.controllerDigitalValues)
 
                 self.lastControllerActivityClock = time.clock()
 
