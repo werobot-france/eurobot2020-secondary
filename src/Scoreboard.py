@@ -5,33 +5,16 @@ https://github.com/mcauser/micropython-tm1637
 
 Python3 Port
 https://github.com/depklyon/raspberrypi-python-tm1637
-
-MIT License
-Copyright (c) 2016-2018 Mike Causer
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
 """
+
 from time import sleep, localtime
 
 import subprocess
 from time import time, sleep, localtime
+
 from wiringpi import wiringPiSetupGpio, pinMode, digitalRead, digitalWrite, GPIO
+
+from gpiozero import DigitalOutputDevice
 
 wiringPiSetupGpio()
 
@@ -50,15 +33,15 @@ class TM1637(object):
     def __init__(self, clk, dio, brightness=7):
         self.clk = clk
         self.dio = dio
+        self.clkDevice = DigitalOutputDevice(clk)
+        self.dioDevice = DigitalOutputDevice(dio)
+        
+        self.clkDevice.off()
+        self.dioDevice.off()
 
         if not 0 <= brightness <= 7:
             raise ValueError("Brightness out of range")
         self._brightness = brightness
-
-        pinMode(self.clk, GPIO.INPUT)
-        pinMode(self.dio, GPIO.INPUT)
-        digitalWrite(self.clk, 0)
-        digitalWrite(self.dio, 0)
         
         sleep(TM1637_DELAY)
 
@@ -211,46 +194,25 @@ class TM1637(object):
             self.write(data[0+i:4+i])
             sleep(delay / 1000)
 
-
-class TM1637Decimal(TM1637):
-    """Library for quad 7-segment LED modules based on the TM1637 LED driver.
-
-    This class is meant to be used with decimal display modules (modules
-    that have a decimal point after each 7-segment LED).
-    """
-
-    def encode_string(self, string):
-        """Convert a string to LED segments.
-
-        Convert an up to 4 character length string containing 0-9, a-z,
-        space, dash, star and '.' to an array of segments, matching the length of
-        the source string."""
-        segments = bytearray(len(string.replace('.','')))
-        j = 0
-        for i in range(len(string)):
-            if string[i] == '.' and j > 0:
-                segments[j-1] |= TM1637_MSB
-                continue
-            segments[j] = self.encode_char(string[i])
-            j += 1
-        return segments
+class Scoreboard:
     
+    score = 0
+    
+    def __init__(self, clk, dio):
+        self.display = TM1637(clk, dio)
+        self.display.brightness(2)
 
-# Fonction appelee a l'infini pour afficher l'heure
-def afficher_horloge(aff):
-    # Recuperation de l'heure locale et affichage sur le module
-    t = localtime()
-    aff.numbers(t.tm_hour, t.tm_min)
-
-
-print("Demarrage de l'horloge ...")
-
-# Initialisation de l'afficheur et definition de la luminosite (0-7)
-afficheur = TM1637(clk=13, dio=26)
-afficheur.brightness(2)
-
-# Boucle infinie appelant la fonction afficher_horloge()
-while True:
-    afficher_horloge(afficheur)
-    # Pour soulager le Raspberry : pause de 0.5 sec
-    sleep(0.5)
+    def update(self):
+        self.display.number(self.score)
+        
+    def add(self, value = 1):
+        self.score += value
+        self.update()
+    
+    def remove(self, value = 1):
+        self.score -= value
+        self.update()
+        
+    def set(self, value = 1):
+        self.score = value
+        self.update()
