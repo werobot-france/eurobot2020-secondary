@@ -3,9 +3,11 @@ import time
 import math
 
 class Stepper:
-    def __init__(self, dirPin, stepPin, sleepPin = None):
-        self.dir =  DigitalOutputDevice(dirPin)
-        self.step = DigitalOutputDevice(stepPin)
+    def __init__(self, **args):
+        # dirPin, stepPin, microSwitchPin, originDirectionIsClockwise = False, sleepPin = None
+        self.dir =  DigitalOutputDevice(args['directionPin'])
+        self.step = DigitalOutputDevice(args['stepPin'])
+        self.endSwitch = DigitalOutputDevice(args['endSwitchPin'])
         if sleepPin != None:
             self.enableOutput = DigitalOutputDevice(sleepPin)
             # by default we disable the card
@@ -81,4 +83,13 @@ class Stepper:
         if self.enableOutput != None:
             self.enableOutput.value = True
             self.enabled = False
+
+    # 
+    def goToOrigin(self):
+        searchForOrigin = True
+        while searchForOrigin:
+            self.move(10)
+            if self.endSwitch.value:
+                # we reached the end
+                searchForOrigin = False
 
