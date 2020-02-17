@@ -2,25 +2,47 @@ from gpiozero import DigitalOutputDevice
 import time
 import math
 
+'''
+Software-Hardware Inteface for a stepper
+'''
 class Stepper:
+    
+    originDirectionIsClockwise = False
+    
+    value = 0
+    scale = 2 * math.pi
+    minSpeed = 0.002
+    maxSpeed = 0.0005
+    isClockwise = None
+    
+    enableOutput = None
+    enabled = True
+
+    '''
+    args: {
+        'directionPin': Int
+        'stepPin': Int
+        'sleepPin': Int
+        'endSwitchPin': Int
+        'originDirectionIsClockwise': Bool
+    }
+    '''
     def __init__(self, **args):
         # dirPin, stepPin, microSwitchPin, originDirectionIsClockwise = False, sleepPin = None
         self.dir =  DigitalOutputDevice(args['directionPin'])
         self.step = DigitalOutputDevice(args['stepPin'])
-        self.endSwitch = DigitalOutputDevice(args['endSwitchPin'])
-        if sleepPin != None:
-            self.enableOutput = DigitalOutputDevice(sleepPin)
+        
+        if 'endSwitchPin' in args:
+            self.endSwitch = DigitalOutputDevice(args['endSwitchPin'])
+        
+        if 'originDirectionIsClockwise' in args and args['originDirectionIsClockwise']:
+            self.originDirectionIsClockwise = True
+        
+        if 'sleepPin' in args:
+            self.enableOutput = DigitalOutputDevice(args['sleepPin'])
             # by default we disable the card
             self.disable()
-        else:
-            # if no enable pin is provided we consider the device as always enabled
-            self.enableOutput = None
-            self.enabled = True
-        self.value = 0
-        self.scale = 2 * math.pi
-        self.minSpeed = 0.002
-        self.maxSpeed = 0.0005
-        self.isClockwise = None
+        # if no enable pin is provided we consider the device as always enabled
 
     def setScale(self, scale):
         self.scale = scale
@@ -84,9 +106,13 @@ class Stepper:
             self.enableOutput.value = True
             self.enabled = False
 
-    # 
+    # 10 steps in the direction of origin until micro switch is closed
     def goToOrigin(self):
         searchForOrigin = True
+        if self.originDirectionIsClockwise:
+            self.setClockwise()
+        else:
+            self.setAnticlockwise()
         while searchForOrigin:
             self.move(10)
             if self.endSwitch.value:

@@ -26,11 +26,20 @@
     - init tiroir
         - go to endswitch
 
-
-- routine attraper goblet
-    - si il est pas au bon niveau, ce mettre au niveau haut
+- routine attraper goblet (une routine par ascenseur)
+    - si il est pas au bon niveau, se mettre au niveau haut
     - ouvrir pince
     - descendre au niveau eceuil
     - fermer pince
     - se mettre au niveau haut
-- routine
+
+- routine dépiller (une routine par ascenseur)
+    - s'il il n'est pas ouvert, ouvrir le tiroir
+    - s'il il est pas au bon niveau, se mettre au niveau depiller bas
+    - ouvrir pince
+    - se mettre au niveau depiller haut
+    - fermer pince
+    - fermer squeezer
+    - se mettre au niveau deplier supra haut
+    - ouvrir squeezer
+    - (ranger tiroir)
