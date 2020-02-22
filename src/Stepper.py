@@ -108,14 +108,16 @@ class Stepper:
 
     # 10 steps in the direction of origin until micro switch is closed
     def goToOrigin(self):
+        self.enable()
         searchForOrigin = True
         if self.originDirectionIsClockwise:
             self.setClockwise()
         else:
             self.setAnticlockwise()
         while searchForOrigin:
-            self.move(10)
+            self.move(10, 0.6)
             if self.endSwitch.value:
                 # we reached the end
                 searchForOrigin = False
+        self.disable()
 

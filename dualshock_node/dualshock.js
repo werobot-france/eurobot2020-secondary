@@ -3,53 +3,23 @@ const Dualshock = require('dualshock')
 
 const ws = new WebSocket('ws://localhost:8000');
 
-let digital = JSON.stringify({
-    a: false,
-    b: false,
-    x: false,
-    y: false,
-    up: false,
-    down: false,
-    left: false,
-    right: false,
-    l1: false,
-    l2: false,
-    l3: false,
-    r1: false,
-    r2: false,
-    r3: false,
-    select: false,
-    start: false,
-    ps: false,
-    pad: false,
-    t1: false,
-    t2: false
-})
+let isWebsocketReady = false
 
-let analog = JSON.stringify({
-    lStickX: 127,
-    lStickY: 127,
-    rStickX: 127,
-    rStickY: 127,
-    l2: 0,
-    r2: 0,
-    // t1X: 180,
-    // t1Y: 639,
-    // t2X: 0,
-    // t2Y: 0
-})
+ws.on('open', () => {
+    console.log('> websocket opened')
+    isWebsocketReady = true
 
-ws.on('open', function open() {
-     ws.send(JSON.stringify({ t: 'init' }))
+    ws.send(JSON.stringify({ t: 'init' }))
 });
 
-ws.on('close', function close() {
-     console.log('> disconnected');
+ws.on('close', () => {
+    isWebsocketReady = false
+    console.log('> websocket disconnected');
 });
 
 function connect() {
     let devicesList = Dualshock.getDevices();
-    if (devicesList.length != 0) {
+    if (isWebsocketReady && devicesList.length != 0) {
 
         let device = devicesList[0]
         let gamepad = Dualshock.open(device, {
@@ -59,52 +29,29 @@ function connect() {
             moveDeadband: 4
         })
 
-        console.log(JSON.stringify({
-            t: 'detection',
+        //console.log('new device detected: ', device)
+        
+        ws.send(JSON.stringify({
+            t: 'device',
             d: device
         }))
 
-        let ignoredIndex = ["t1X", "t1Y", "t2X", "t2Y"]
-
-        gamepad.onmotion = false;
-        gamepad.onstatus = false;
-        gamepad.onupdate = function () {
-            if (JSON.stringify(this.digital) != digital) {
-                digital = JSON.stringify(this.digital)
-                // console.log(JSON.stringify({
-                //     t: 'input',
-                //     i: 'digital',
-                //     d: this.digital
-                // }))
-            }
-            let analogRaw = {
-                lStickX: this.analog.lStickX,
-                lStickY: this.analog.lStickY,
-                rStickX: this.analog.rStickX,
-                rStickY: this.analog.rStickY,
-                l2: this.analog.l2,
-                r2: this.analog.r2
-            }
-            if (JSON.stringify(analogRaw) != analog) {
-                //console.log((new Date()).toString() + ' > send analog')
-                analog = JSON.stringify(analogRaw)
-                // console.log(JSON.stringify({
-                //     t: 'input',
-                //     i: 'analog',
-                //     d: this.analog
-                // }))
-            }
-        }
-
+        // gamepad.onmotion = (data, d1) => {
+        //     console.log(data, d1)
+        // };
+        // get battery status
+        // gamepad.onstatus = (data, status) => {
+        //     console.log(data, status)
+        // };
         gamepad.ondigital = function (button, value) {
             ws.send(JSON.stringify({
-                t: 'input',
+                t: 'digital_input',
                 d: [button, value]
             }))
         }
         gamepad.onanalog = function (axis, value) {
             ws.send(JSON.stringify({
-                t: 'input',
+                t: 'analog_input',
                 d: [axis, value]
             }))
         }
@@ -115,14 +62,24 @@ function connect() {
             }))
         }
         ws.on('message', (data) => {
-             let body = JSON.parse(data)
-             if (body.t == 'led') {
-                 gamepad.setLed(body.d[0], body.d[1], body.d[2])
-             }
+            let body = JSON.parse(data)
+            if (body.t == 'led') {
+                gamepad.setLed(body.d[0], body.d[1], body.d[2])
+            }
+            if (body.t == 'rumble_set') {
+                gamepad.rumble(body.d[0], body.d[1])
+            }
+            if (body.t == 'rumble_add') {
+                gamepad.rumbleAdd(body.d[0], body[1], body[2], body[3])
+            }
+            if (body.t == 'rumble_off') {
+                gamepad.rumble(0, 0)
+            }
         })
         return true
     } else {
-        setTimeout(connect, 2000)
+        setTimeout(connect, 1000)
     }
 }
+    
 connect()

@@ -4,30 +4,31 @@ from time import sleep
 import sys
 import os
 
-stepperA = Stepper(26, 19, 13)
-stepperB = Stepper(6, 5, 0)
-stepperC = Stepper(17, 27, 22)
+# stepper A du coté des ports ethernet et USB
+stepperA = Stepper(directionPin=26, stepPin=19, sleepPin=13)
+stepperB = Stepper(directionPin=6, stepPin=5, sleepPin=0, endSwitchPin=21, originDirectionIsClockwise=True)
+stepperC = Stepper(directionPin=17, stepPin=27, sleepPin=22)
 
-stepper = stepperC
+stepper = stepperB
 
 def main():
-    stepper.enable()
-    while True:
-        sleep(4)
-
-    return
-    while True:
-        stepper.setClockwise()
-        stepper.enable()
-        stepper.move(300, 1.1)
-        print('Stop')
-        sleep(0.5)
-        print('Replay')
-        stepper.setAnticlockwise()
-        stepper.move(300, 1.1)
-        #stepper.disable()
-        print(degrees(stepper.getPosition()) % 360)
-        sleep(1)
+    stepper.goToOrigin()
+    #stepper.setAnticlockwise() # elevator = vers le haut
+    # stepper.setClockwise()
+    # stepper.enable()
+    # stepper.move(200, 0.4)
+    
+    # stepper.disable()
+    #while True:
+        
+        # print('Stop')
+        # sleep(0.5)
+        # print('Replay')
+        # stepper.setAnticlockwise()
+        # stepper.move(300, 1.3)
+        # #stepper.disable()
+        # print(degrees(stepper.getPosition()) % 360)
+        #sleep(1)
 
     while True:
         sleep(1)

@@ -13,6 +13,10 @@ class DualshockThroughtNode:
     ]
     websocket = None
     eventLoop = None
+    
+    controllerDigitalValues = {}
+
+    controllerAnalogValues = {}
 
     def __init__(self):
         self.events = event_emitter.EventEmitter()
@@ -29,10 +33,15 @@ class DualshockThroughtNode:
             elif parsedBody["t"] == "disconnection":
                 self.events.emit('controller_disconnected')
 
-            elif parsedBody["t"] == "input":
+            elif parsedBody["t"] == "analog_input":
+                #self.events.emit('analog_input')
+                print(parsedBody)
+                
+            elif parsedBody["t"] == "digital_input":
+                print(parsedBody)
                 # filter double input (right game pad)                
                 # if (parsedBody["d"][0] in self.ignoredInputType) == False:
-                self.events.emit('controller_input', label=parsedBody["d"][0], value=parsedBody["d"][1])
+                #self.events.emit('digital_input', label=parsedBody["d"][0], value=parsedBody["d"][1])
     
     def startNodeJs(self):
         subprocess.Popen(["node", "dualshock_node/dualshock.js"])    
