@@ -1,4 +1,3 @@
-from Stepper import Stepper
 from time import sleep
 
 '''
@@ -10,7 +9,7 @@ class Drawer:
     
     servoInterface = None
     
-    squeezerOpenedPosition = 0
+    squeezerOpenedPosition = 90
     squeezerClosedPosition = 180
     
     closedPosition = 0
@@ -24,9 +23,10 @@ class Drawer:
     }
     '''
     def __init__(self, **args):
+        print(args)
         self.squeezerServoSlot = args['squeezerServoSlot']
         if 'servoInterface' in args:
-            self.servoInterface = args['servoInteface']
+            self.servoInterface = args['servoInterface']
         '''
         directionPin = args['directionPin'],
         stepPin = args['stepPin'],
@@ -34,11 +34,12 @@ class Drawer:
         endSwitchPin = args['endSwitchPin'],
         originDirectionIsClockwise = args['originDirectionIsClockwise']
         '''
-        self.stepper = Stepper(args['stepperConfig'])
+        #self.stepper = Stepper(args['stepperConfig'])
     
     def setSqueezerPosition(self, position):
+        print(position)
         if self.servoInterface != None:
-            self.servoInteface.set_pwm(self.squeezerServoSlot, 0, position)
+            self.servoInterface.set_pwm(self.squeezerServoSlot, 0, position)
         else:
             print(self.label, 'Set squeezer position to', position)
         

@@ -1,4 +1,4 @@
-from Stepper import Stepper
+#from Stepper import Stepper
 
 '''
 Elevator include:
@@ -11,7 +11,7 @@ class Elevator:
     stepper = None
     
     # in degrees
-    clawOpenedPosition = 0
+    clawOpenedPosition = 90
     clawClosedPosition = 180
     
     aboveReefLevel = 100
@@ -25,7 +25,7 @@ class Elevator:
         'label': String (name to identify the elevator)
         'clawServoSlot': Int
         'stepperConfig': StepperConfig (see Stepper.py __init__())
-        'servoInteface': Adafruit_PCA9685.PCA9685 instance
+        'servoInterface': Adafruit_PCA9685.PCA9685 instance
     }
     '''
     def __init__(self, **args):
@@ -33,7 +33,7 @@ class Elevator:
         if 'label' in args:
             self.label = args['label']
         if 'servoInterface' in args:
-            self.servoInterface = args['servoInteface']
+            self.servoInterface = args['servoInterface']
         '''
         directionPin = args['directionPin'],
         stepPin = args['stepPin'],
@@ -41,11 +41,12 @@ class Elevator:
         endSwitchPin = args['endSwitchPin'],
         originDirectionIsClockwise = args['originDirectionIsClockwise']
         '''
-        self.stepper = Stepper(args['stepperConfig'])
+        #self.stepper = Stepper(args['stepperConfig'])
         
     def setClawPosition(self, position):
         if self.servoInterface != None:
-            self.servoInteface.set_pwm(self.clawServoSlot, 0, position)
+            print(position)
+            self.servoInterface.set_pwm(self.clawServoSlot, 0, position)
         else:
             print(self.label, 'Set claw position to', position)
         
