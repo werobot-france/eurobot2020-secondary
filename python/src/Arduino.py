@@ -3,19 +3,11 @@ from time import sleep
 from threading import Thread
 
 class Arduino:
-    configuration = {
-        "STEPPER_GO_TO_ORIGIN": {
-            "params": {
-                "stepperId",
-                "position"
-            }
-        }
-    }
     
     def __init__(self):
         self.serial = serial.Serial(
-            port="/dev/ttyUSB_NANO",
-            baudrate = 9600, 
+            port="/dev/ttyUSB0",
+            baudrate = 115200, 
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
             bytesize=serial.EIGHTBITS,

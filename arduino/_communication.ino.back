@@ -22,8 +22,6 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("L: Lel");
-  delay(1000);
   if (Serial.available()) {
     command = Serial.readStringUntil('\n');
     if (command != "") {

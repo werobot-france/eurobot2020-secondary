@@ -12,29 +12,31 @@ class Drawer:
     squeezerOpenedPosition = 90
     squeezerClosedPosition = 180
     
-    closedPosition = 0
-    openedPosition = 0
-
     '''
     args: {
         'squeezerServoSlot': Int
-        'stepperConfig': StepperConfig (see Stepper.py __init__())
         'servoInteface': Adafruit_PCA9685.PCA9685 instance
+        'arduinoInterface': Arduino instance
     }
     '''
     def __init__(self, **args):
-        print(args)
         self.squeezerServoSlot = args['squeezerServoSlot']
         if 'servoInterface' in args:
             self.servoInterface = args['servoInterface']
-        '''
-        directionPin = args['directionPin'],
-        stepPin = args['stepPin'],
-        sleepPin = args['sleepPin'],
-        endSwitchPin = args['endSwitchPin'],
-        originDirectionIsClockwise = args['originDirectionIsClockwise']
-        '''
-        #self.stepper = Stepper(args['stepperConfig'])
+        if 'arduinoInterface' in args:
+            self.arduinoInterface = args['arduinoInterface']
+            
+    def close(self):
+        self.arduinoInterface.sendCommand(
+            name = 'DRAWER_GO_TO_BACK',
+            expectResponse = True
+        )
+        
+    def open(self):
+        self.arduinoInterface.sendCommand(
+            name = 'DRAWER_GO_TO_FRONT',
+            expectResponse = True
+        )
     
     def setSqueezerPosition(self, position):
         print(position)
@@ -52,4 +54,4 @@ class Drawer:
     def init(self):
         self.squeeze()
         sleep(4)
-        self.stepper.goToOrigin()
+        self.close()

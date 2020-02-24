@@ -22,27 +22,34 @@ class Elevator:
     
     '''
     args: {
+        'id': Int
         'label': String (name to identify the elevator)
         'clawServoSlot': Int
-        'stepperConfig': StepperConfig (see Stepper.py __init__())
         'servoInterface': Adafruit_PCA9685.PCA9685 instance
+        'arduinoInterface': Arduino instance
     }
     '''
     def __init__(self, **args):
         self.clawServoSlot = args['clawServoSlot']
+        self.id = args['id']
         if 'label' in args:
             self.label = args['label']
         if 'servoInterface' in args:
             self.servoInterface = args['servoInterface']
-        '''
-        directionPin = args['directionPin'],
-        stepPin = args['stepPin'],
-        sleepPin = args['sleepPin'],
-        endSwitchPin = args['endSwitchPin'],
-        originDirectionIsClockwise = args['originDirectionIsClockwise']
-        '''
-        #self.stepper = Stepper(args['stepperConfig'])
+        if 'arduinoInterface' in args:
+            self.arduinoInterface = args['arduinoInterface']
+            
+    def goTo(self, position, speed = 300):
+        # WARNING: INVERTED POSITION AND SPEED!
+        if position > 0:
+            speed = -speed
+            position = -position
         
+        self.arduinoInterface.sendCommand(
+            name = "ELEVATOR_GO_TO",
+            params = [self.id, position, speed]
+        )
+    
     def setClawPosition(self, position):
         if self.servoInterface != None:
             print(position)
@@ -57,7 +64,7 @@ class Elevator:
         self.setClawPosition(self.clawClosedPosition)
     
     def init(self):
-        self.stepper.goToOrigin()
+        self.goTo(0)
         self.closeClaw()
         
     def takeBuoyInReefRoutine(self):
