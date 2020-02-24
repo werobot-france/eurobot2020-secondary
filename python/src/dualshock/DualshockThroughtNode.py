@@ -25,7 +25,7 @@ class DualshockThroughtNode(Dualshock):
 
             elif parsedBody['t'] == "device":
                 print('> DualshockThroughtNode: Detected')
-                self.setLed(0, 255, 255)
+                #self.setLed(0, 255, 255)
                 print(parsedBody['d'])
                 #self.events.emit('controller_detected', controller=parsedBody["d"])
 

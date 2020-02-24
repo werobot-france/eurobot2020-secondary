@@ -29,19 +29,23 @@ class Drawer:
     def close(self):
         self.arduinoInterface.sendCommand(
             name = 'DRAWER_GO_TO_BACK',
+            params = [],
             expectResponse = True
         )
         
     def open(self):
         self.arduinoInterface.sendCommand(
             name = 'DRAWER_GO_TO_FRONT',
+            params = [],
             expectResponse = True
         )
     
     def setSqueezerPosition(self, position):
-        print(position)
         if self.servoInterface != None:
-            self.servoInterface.set_pwm(self.squeezerServoSlot, 0, position)
+            #self.servoInterface.set_pwm(self.squeezerServoSlot, 0, position)
+            #kit.servo[self.squeezerServoSlot].angle = position
+            self.servoInterface.setAngle(self.squeezerServoSlot, position)
+            print('Set squeezer position to', position, 'in slot', self.squeezerServoSlot)
         else:
             print(self.label, 'Set squeezer position to', position)
         

@@ -43,3 +43,7 @@
     - se mettre au niveau deplier supra haut
     - ouvrir squeezer
     - (ranger tiroir)
+
+## bluetooth
+
+rfkill unblock bluetooth

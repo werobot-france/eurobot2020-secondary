@@ -39,6 +39,9 @@ int commandParam4 = 0;
 #define lsLeftElevator 8 // LEFT ELEVATOR
 #define lsRightElevator 9 // RIGHT ELEVATOR
 
+#define button 16
+#define led 13
+
 AccelStepper drawer = AccelStepper(motorInterfaceType, stepDrawer, dirDrawer);
 AccelStepper leftElevator = AccelStepper(motorInterfaceType, stepLeftElevator, dirLeftElevator);
 AccelStepper rightElevator = AccelStepper(motorInterfaceType, stepRightElevator, dirRightElevator);
@@ -95,6 +98,17 @@ void _delay(float seconds) {
 
 void setup() {
   Serial.begin(9600);
+  Serial.setTimeout(50);
+
+  pinMode(button, INPUT);
+  pinMode(led, OUTPUT);
+  digitalWrite(led, HIGH);
+  delay(50);
+  digitalWrite(led, LOW);
+  delay(100);
+  digitalWrite(led, HIGH);
+  delay(50);
+  digitalWrite(led, LOW);
 
   pinMode(lsBackDrawer, INPUT);
   pinMode(lsFrontDrawer, INPUT);
@@ -117,6 +131,11 @@ void setup() {
 }
 
 void loop() {
+  if (digitalRead(button) == HIGH) {
+    digitalWrite(led, HIGH);
+  } else {
+    digitalWrite(led, LOW);
+  }
   if (Serial.available()) {
     command = Serial.readStringUntil('\n');
     if (command != "") {
@@ -186,10 +205,11 @@ void loop() {
             enablePin = enableRightElevator;
             stepper.setCurrentPosition(rightElevatorPosition);
         }
+        /*
         Serial.print("ELEVATOR_GO_TO: Start with ");
         Serial.print(stepper.currentPosition());
         Serial.println(" position");
-
+        */
         int speed = commandParam3;
         if (speed == 0) {
             speed = 300; // default speed is 300

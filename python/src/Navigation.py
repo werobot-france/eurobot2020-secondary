@@ -1,13 +1,14 @@
+from time import sleep
+
 '''
 Abstration of navigation
 '''
 class Navigation:
     escSlots = {
-        'frontLeft': 6,
-        'frontRight': 5,
-        'backLeft': 0,
-        'backRight': 1,
-        'arm': 2
+        'frontLeft': 15,
+        'frontRight': 12, # 12
+        'backLeft': 14,
+        'backRight': 13 # 13
     }
     servoInterface = None
     
@@ -16,14 +17,19 @@ class Navigation:
         if self.servoInterface != None:
             for slot in self.escSlots:
                 # 307 est le signal neutre sous 50 Hz (1.5 / 20 x 4096 = 307)
-                self.servoInterface.set_pwm(slot, 0, 307)
+                self.servoInterface.set_pwm(self.escSlots[slot], 0, 307)
+                #self.servoInterface.servo[self.escSlots[slot]] = 307
+                #sleep(0)
         else:
             print('> NAVIGATION IS MOCKED')
         
     def setPwm(self, arrayLabelValue):
+        #print(arrayLabelValue)
         if self.servoInterface != None:
-            for label, value in arrayLabelValue:
-                self.servoInterface.set_pwm(self.esc[label], 0, value)
+            for label in arrayLabelValue:
+                self.servoInterface.set_pwm(self.escSlots[label], 0, arrayLabelValue[label])
+                #self.servoInterface.servo[self.escSlots[label]] = 307
+                #sleep(0)
         else:
             print(arrayLabelValue)
 
@@ -35,7 +41,7 @@ class Navigation:
     def convertSpeedToEsc(self, speed):
         return round(self.mappyt(speed, 0, 100, 307, 410))
     
-    def northTranslation(self, speed):
+    def eastTranslation(self, speed):
         a = self.convertSpeedToEsc(speed)
         self.setPwm({
             'frontLeft': a,
@@ -51,7 +57,7 @@ class Navigation:
     def southTranslation(self, speed):
         self.northTranslation(-speed)
 
-    def eastTranslation(self, speed):
+    def northTranslation(self, speed):
         a = self.convertSpeedToEsc(speed)
         r = self.convertSpeedToEsc(-speed)
         self.setPwm({
@@ -120,7 +126,7 @@ class Navigation:
         self.northWestTranslation(-speed)
 
     def stopAll(self):
-        print('STOP ALL')
+        #print('STOP ALL')
         speed = self.convertSpeedToEsc(0)
         self.setPwm({
             'frontLeft': speed,
@@ -129,3 +135,11 @@ class Navigation:
             'backRight': speed
         })
         #self.servo.set_pwm(self.escSlots[slot], 0, self.convertSpeedToEsc(0))
+    
+    def callSmth(self, speed = 410):
+        self.setPwm({
+            'frontLeft': self.convertSpeedToEsc(0),
+            'frontRight': self.convertSpeedToEsc(0),
+            'backLeft': 410,
+            'backRight': self.convertSpeedToEsc(0)
+        })

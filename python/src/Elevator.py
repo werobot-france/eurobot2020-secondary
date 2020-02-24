@@ -11,14 +11,16 @@ class Elevator:
     stepper = None
     
     # in degrees
-    clawOpenedPosition = 90
-    clawClosedPosition = 180
+    clawOpenedPosition = 120
+    clawClosedPosition = 20
     
     aboveReefLevel = 100
     takeReefLevel = 50
     lowFairwayLevel = 0
     highFairwayLevel = 30
     supraHighFairwayLevel = 75
+    
+    currentPosition = 0
     
     '''
     args: {
@@ -40,20 +42,45 @@ class Elevator:
             self.arduinoInterface = args['arduinoInterface']
             
     def goTo(self, position, speed = 300):
-        # WARNING: INVERTED POSITION AND SPEED!
-        if position > 0:
+        print('target position', position) 
+            
+        if self.currentPosition < position:
             speed = -speed
-            position = -position
+        
+        # WARNING: INVERTED POSITION AND SPEED!
+        if position < 0:
+            position = 0
+        if position > 850:
+            position = 850
+            
+        position = -position
+        
+        if position == 0:
+            speed = 300
+            
+        print('ELEVATOR GO TO', position, speed)
         
         self.arduinoInterface.sendCommand(
             name = "ELEVATOR_GO_TO",
-            params = [self.id, position, speed]
+            params = [self.id, position, speed],
+            expectResponse = True
         )
+        self.currentPosition = -position
+        print('Done Go TO')
     
     def setClawPosition(self, position):
         if self.servoInterface != None:
-            print(position)
-            self.servoInterface.set_pwm(self.clawServoSlot, 0, position)
+            #self.servoInterface.set_pwm(self.clawServoSlot, 0, position)
+            #self.servoInterface.servo[self.clawServoSlot].angle = position
+            #self.servoInterface.setAngle(self.clawServoSlot, position)
+            slot = str(self.clawServoSlot)
+            angle = str(position)
+            data = slot + ':' + angle
+            print(data)
+            self.servoInterface.stdin.write(bytes(data, "utf-8"))
+            self.servoInterface.stdin.flush()
+            #print(self.clawServoSlot)
+            print(self.label, 'Set claw position to', position, 'in slot', self.clawServoSlot)
         else:
             print(self.label, 'Set claw position to', position)
         
