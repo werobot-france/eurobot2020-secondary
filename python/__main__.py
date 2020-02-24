@@ -1,24 +1,23 @@
 # initialize Dualshock interface (in pygame mode or throught node mode)
 # initialize Navigation interface
-''' 
+
 import Adafruit_PCA9685
 from src.dualshock.DualshockThroughtPygame import DualshockThroughtPygame
 from src.dualshock.DualshockThroughtNode import DualshockThroughtNode
 from src.Navigation import Navigation
 from src.ControlDispatcher import ControlDispatcher
 
-'''
-
-# #servoInterface = Adafruit_PCA9685.PCA9685()
-# #servoInterface.set_pwm_freq(50)
+servoInterface = Adafruit_PCA9685.PCA9685()
+servoInterface.set_pwm_freq(50)
 # servoInterface = None
 
-#dualshock = DualshockThroughtNode()
+dualshock = DualshockThroughtNode()
 #dualshock = DualshockThroughtPygame()
 
-# navigation = Navigation(servoInterface)
-# controlDispatcher = ControlDispatcher(dualshock, navigation)
+navigation = Navigation(servoInterface)
+controlDispatcher = ControlDispatcher(dualshock, navigation)
 
+dualshock.start()
 
 ''' 
 def mappyt(x, inMin, inMax, outMin, outMax):
@@ -32,7 +31,6 @@ def onAnalog(values):
     
 def onDigital(values):
     print(values)
-    
 
 dualshock.events.on('analog_input', onAnalog)
 dualshock.events.on('digital_input', onDigital)
