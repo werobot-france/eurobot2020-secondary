@@ -6,7 +6,7 @@ module.exports = class Arduino {
         this.device = null
         // to filter the arduino device in the list
         this.productId = '7523'
-        this.comName
+        this.path
         this.baudRate = 9600
         this.lastResponse = {}
     }
@@ -14,33 +14,33 @@ module.exports = class Arduino {
     init() {
         return new Promise((resolve, reject) => {
             // list all serial port and take the first as the arduino
-            SerialPort.list((err, ports) => {
-                if (err !== null) {
-                    console.log('ARDUINO: Error while getting the list of serialports')
-                    console.log(err)
-                    return reject()
-                }
+            SerialPort.list().then((ports) => {
+                this.path = ports.filter(item => item.productId === this.productId)[0].path
 
-                this.comName = ports.filter(item => item.productId === this.productId)[0].comName
-
-                console.log('ARDUINO: Arduino plugged on ' + this.comName)
+                console.log('ARDUINO: Arduino plugged on ' + this.path)
                 this.device = SerialPort(
-                    this.comName,
+                    this.path,
                     {
                         baudRate: this.baudRate
                     }
                 )
 
                 this.device.on('open', () => {
-                    if (err) {
-                        console.log("ARDUINO: can't init serialport connection")
-                        console.log(err)
-                        return reject()
-                    }
+                    // if (err) {
+                    //     console.log("ARDUINO: can't init serialport connection")
+                    //     console.log(err)
+                    //     return reject()
+                    // }
                     setTimeout(() => {
                         return resolve()
                     }, 900)
                 })
+            }).catch((err) => {
+                if (err !== null) {
+                    console.log('ARDUINO: Error while getting the list of serialports')
+                    console.log(err)
+                    return reject()
+                }
             })
         })
     }
@@ -48,7 +48,7 @@ module.exports = class Arduino {
     parseResponse(data) {
         let decodedData = StringDecoder.write(data)
         let responseType = decodedData.split(': ')[0]
-        //console.log(decodedData)
+        console.log('decoded Data', decodedData)
         let payload = decodedData.split(': ')[1].replace('\r\n', '')
         return {
             responseType,
@@ -72,6 +72,7 @@ module.exports = class Arduino {
                     return resolve(this.parseResponse(data))
                 })
             }
+            console.log('sent', toSend)
             this.device.write(toSend, (err) => {
                 if (err !== undefined) {
                     console.log("ARDUINO: Can't send a command")
@@ -93,6 +94,7 @@ module.exports = class Arduino {
     isAlive() {
         return new Promise((resolve, reject) => {
             this.sendCommand('PING', [], true).then(response => {
+                console.log(response.payload)
                 if (response.payload !== 'pong!' || response.responseType !== 'L') {
                     return reject()
                 } else {

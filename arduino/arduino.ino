@@ -127,7 +127,7 @@ void setup() {
   rightElevator.setMaxSpeed(1000);
   drawer.setMaxSpeed(1000);
 
-  Serial.println("SETUP: Ready");
+  //Serial.println("SETUP: Ready");
 }
 
 void loop() {

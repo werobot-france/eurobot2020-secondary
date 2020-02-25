@@ -79,8 +79,8 @@ class Navigation:
         r = self.convertSpeedToEsc(-speed)
         self.setPwm({
             'frontLeft': a,
-            'frontRight': r,
-            'backLeft': a,
+            'frontRight': a,
+            'backLeft': r,
             'backRight': r
         })
         # self.servo.set_pwm(self.escSlots['frontLeft'], 0, a)

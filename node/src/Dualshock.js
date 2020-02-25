@@ -3,6 +3,17 @@ const EventEmitter = require('events')
 
 module.exports = class Dualshock extends EventEmitter {
 
+    constructor() {
+        super()
+        this.analogValues = {
+            lStickX: 0,
+            lStickY: 0,
+            rStickX: 0,
+            rStickY: 0,
+            l2: 0
+        }
+    }
+
     connect() {
         let devicesList = dualshock.getDevices();
         if (devicesList.length != 0) {
@@ -34,10 +45,12 @@ module.exports = class Dualshock extends EventEmitter {
             this.controller.onanalog = (axis, value) => {
                 if (axis === 't1X' || axis === 't1Y')
                     return
-                
+
                 value = ((value * 2 / 255) - 1).toFixed(2)
                 
-                
+                this.analogValues[axis] = parseFloat(value)
+
+                this.emit('analog', this.analogValues)
             }
             this.controller.ondisconnect = () => {
                 console.log('> Disconnexion')
@@ -53,7 +66,9 @@ module.exports = class Dualshock extends EventEmitter {
 
             return true
         } else {
-            setTimeout(connect, 1000)
+            setTimeout(() => {
+                this.connect()
+            }, 1000)
         }
     }
 
