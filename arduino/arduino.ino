@@ -2,6 +2,8 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
 #include <AccelStepper.h>
+#include <LiquidCrystal_PCF8574.h>
+#include "./CustomStepper.h"
 
 /**
  * Command interface
@@ -11,7 +13,9 @@ String commandName = "";
 int commandParam1 = 0;
 int commandParam2 = 0;
 int commandParam3 = 0;
-int commandParam4 = 0;
+String commandParam4 = "";
+
+int lcdError;
 
 /**
  * Stepper interface
@@ -42,59 +46,12 @@ int commandParam4 = 0;
 #define button 16
 #define led 13
 
-AccelStepper drawer = AccelStepper(motorInterfaceType, stepDrawer, dirDrawer);
-AccelStepper leftElevator = AccelStepper(motorInterfaceType, stepLeftElevator, dirLeftElevator);
-AccelStepper rightElevator = AccelStepper(motorInterfaceType, stepRightElevator, dirRightElevator);
+CustomStepper leftElevator(dirLeftElevator, stepLeftElevator, enableLeftElevator, lsLeftElevator, -1);
+CustomStepper rightElevator(dirRightElevator, stepRightElevator, enableRightElevator, lsRightElevator, -1);
+CustomStepper drawer(dirDrawer, stepDrawer, enableDrawer, lsBackDrawer, lsFrontDrawer);
 
-int leftElevatorPosition = 0;
-int rightElevatorPosition = 0;
+LiquidCrystal_PCF8574 lcd(0x27);
 
-void drawerGoToBack() {
-  digitalWrite(enableDrawer, LOW);
-  while (digitalRead(lsBackDrawer) == HIGH) {
-    drawer.setSpeed(200); // back is positive speed = 100
-    drawer.runSpeed();
-  }
-  digitalWrite(enableDrawer, HIGH);
-  drawer.setCurrentPosition(0);
-}
-
-void drawerGoToFront() {
-  digitalWrite(enableDrawer, LOW);
-  while (digitalRead(lsFrontDrawer) == HIGH) {
-    drawer.setSpeed(-200); // front is negative
-    drawer.runSpeed();
-  }
-  digitalWrite(enableDrawer, HIGH);
-}
-
-// void elevatorGoToOrigin(int elevator) {
-//   AccelStepper stepper;
-//   int switchPin;
-//   int enablePin;
-//   if (elevator == 0) {
-//     stepper = leftElevator;
-//     switchPin = lsLeftElevator;
-//     enablePin = enableLeftElevator;
-//   }
-//   if (elevator == 1) {
-//     stepper = rightElevator;
-//     switchPin = lsRightElevator;
-//     enablePin = enableRightElevator;
-//   }
-//   digitalWrite(enablePin, LOW);
-//   while (digitalRead(switchPin) == HIGH) {
-//     stepper.setSpeed(300); // origin is negative
-//     stepper.runSpeed();
-//   }
-// }
-
-/*
-void _delay(float seconds) {
-  long endTime = millis() + seconds * 1000;
-  while (millis() < endTime)_loop();
-}
-*/
 
 void setup() {
   Serial.begin(9600);
@@ -109,26 +66,22 @@ void setup() {
   digitalWrite(led, HIGH);
   delay(50);
   digitalWrite(led, LOW);
-
-  pinMode(lsBackDrawer, INPUT);
-  pinMode(lsFrontDrawer, INPUT);
-  pinMode(lsLeftElevator, INPUT);
-  pinMode(lsRightElevator, INPUT);
-
-  pinMode(enableDrawer, OUTPUT);
-  pinMode(enableLeftElevator, OUTPUT);
-  pinMode(enableRightElevator, OUTPUT);
   
-  digitalWrite(enableDrawer, HIGH);
-  digitalWrite(enableLeftElevator, HIGH);
-  digitalWrite(enableRightElevator, HIGH);
-  
-  leftElevator.setMaxSpeed(1000);
-  rightElevator.setMaxSpeed(1000);
-  drawer.setMaxSpeed(1000);
+  leftElevator.init();
+  rightElevator.init();
+  drawer.init();
+
+  Wire.begin();
+  Wire.beginTransmission(0x27);
+  lcdError = Wire.endTransmission();
+
+  lcd.begin(16, 2);
 
   //Serial.println("SETUP: Ready");
 }
+
+
+int selectedElevator = 0;
 
 void loop() {
   if (digitalRead(button) == HIGH) {
@@ -136,6 +89,9 @@ void loop() {
   } else {
     digitalWrite(led, LOW);
   }
+  drawer.loop();
+  leftElevator.loop();
+
   if (Serial.available()) {
     command = Serial.readStringUntil('\n');
     if (command != "") {
@@ -157,7 +113,7 @@ void loop() {
             if (raw3 != raw2) {
               if (raw3.indexOf("#") != -1) {
                 commandParam3 = raw3.substring(0, raw3.indexOf("#")).toInt();
-                commandParam4 = raw3.substring(raw3.indexOf("#") + 1, raw3.length()).toInt();
+                commandParam4 = raw3.substring(raw3.indexOf("#") + 1, raw3.length());// last param is string
               } else {
                 commandParam3 = raw3.substring(0, raw3.length()).toInt();
               }
@@ -169,18 +125,21 @@ void loop() {
       }
 
       //Serial.println(commandName);
-      if (commandName == "RESET") {
-        Serial.println("L: Reset!");
+      if (commandName == "STOP") {
+        drawer.stop();
+        leftElevator.stop();
+        rightElevator.stop();
 
       } else if (commandName == "PING") {
         Serial.println("L: Pong!");
-
       } else if (commandName == "DRAWER_GO_TO_BACK") {
-        drawerGoToBack();
-        Serial.println("DRAWER_GO_TO_BACK: Done");
+        
+        drawer.continuous(commandParam1);
+
       } else if (commandName == "DRAWER_GO_TO_FRONT") {
-        drawerGoToFront();
-        Serial.println("DRAWER_GO_TO_FRONT: Done");
+        
+        drawer.continuous(-commandParam1);
+
       } else if (commandName == "ELEVATOR_GO_TO") {
         /**
          * Command ELEVATOR_GO_TO
@@ -189,63 +148,20 @@ void loop() {
         /**
          * -850 step maximum
          **/
-        int elevator = commandParam1;
-        AccelStepper stepper;
-        int switchPin;
-        int enablePin;
-        if (elevator == 0) {
-            stepper = leftElevator;
-            switchPin = lsLeftElevator;
-            enablePin = enableLeftElevator;
-            stepper.setCurrentPosition(leftElevatorPosition);
-        }
-        if (elevator == 1) {
-            stepper = rightElevator;
-            switchPin = lsRightElevator;
-            enablePin = enableRightElevator;
-            stepper.setCurrentPosition(rightElevatorPosition);
-        }
-        /*
-        Serial.print("ELEVATOR_GO_TO: Start with ");
-        Serial.print(stepper.currentPosition());
-        Serial.println(" position");
-        */
-        int speed = commandParam3;
-        if (speed == 0) {
-            speed = 300; // default speed is 300
-        }
-
-        // enable the stepper
-        digitalWrite(enablePin, LOW);
-
-        int targetPosition = commandParam2;
-        if (targetPosition == 0) {
-            while (digitalRead(switchPin) == HIGH) {
-                stepper.setSpeed(speed); // origin is negative
-                stepper.runSpeed();
+      } else if (commandName == "ELEVATOR_SET_SPEED") {
+        selectedElevator = commandParam1;
+        if (commandParam2 == 0) {
+            if (selectedElevator == 0) {
+                leftElevator.stop();
+            } else {
+                rightElevator.stop();
             }
-            stepper.setCurrentPosition(0);
+        }
+        if (selectedElevator == 0) {
+            leftElevator.continuous(commandParam2);
         } else {
-            while(stepper.currentPosition() != targetPosition)
-            {
-                stepper.setSpeed(speed);
-                stepper.runSpeed();
-            }
+            rightElevator.continuous(commandParam2);
         }
-
-        // disable the stepper
-        digitalWrite(enablePin, HIGH);
-
-        if (elevator == 0) {
-            leftElevatorPosition = stepper.currentPosition();
-        }
-        if (elevator == 1) {
-            rightElevatorPosition = stepper.currentPosition();
-        }
-
-        Serial.print("ELEVATOR_GO_TO: Done with ");
-        Serial.print(stepper.currentPosition());
-        Serial.println(" position");
       } else if (commandName == "CMD") {
         Serial.print("CMD: ");
         Serial.print(commandParam1);
@@ -255,14 +171,29 @@ void loop() {
         Serial.print(commandParam3);
         Serial.print("  ");
         Serial.println(commandParam4);
-      }
-      else {
+      } else if (commandName == "LCD_BACKLIGHT") {
+        lcd.setBacklight(commandParam1);
+      } else if (commandName == "LCD_CLEAR") {
+        lcd.clear();
+      } else if (commandName == "LCD_FIRST") {
+        lcd.home();
+        lcd.print(commandParam4);
+      } else if (commandName == "LCD_SECOND") {
+        lcd.setCursor(0, 1);
+        lcd.print(commandParam4);
+      } else if (commandName == "LCD_EXIST") {
+        if (lcdError == 0) {
+            Serial.println("LCD_EXIST: FOUND");
+        } else {
+            Serial.println("LCD_EXIST: NOT_FOUND");
+        }
+      } else {
         Serial.println("E: invalid commandName");
       }
       commandParam1 = 0;
       commandParam2 = 0;
       commandParam3 = 0;
-      commandParam4 = 0;
+      commandParam4 = "";
     }
   }
 }
