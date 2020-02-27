@@ -20,6 +20,7 @@ let rightElevator = new (require('./src/Elevator'))({
     clawSlot: 10
 })
 let screenInterface = new (require('./src/ScreenInterface'))({arduinoInterface})
+let flags = new (require('./src/Flag'))({pwmInterface, servoSlot: 4})
 
 let dualshock = new Dualshock()
 
@@ -322,6 +323,8 @@ let main = async () => {
         "Hello, World!",
         "Go to werobot.fr"
     ])
+    
+    flags.close()
 
     // await arduino.sendCommand('ELEVATOR_GO_TO', [0, 0])
 
@@ -335,11 +338,20 @@ let main = async () => {
     dualshock.connect()
 
     console.log('Init sequence done')
+
+    // TODO: Start a timer which end after 100 seconds or 1 min and 40 seconds WHEN the match start
+    // flag.startTimer()
+    // setTimeout(() => {
+    //     console.log('END OF THE MATCH !!')
+    //     arduinoInterface.sendCommand('STOP')
+
+    // }, 100 * 1000)
 }
 
 process.on('exit', (code) => {   
     console.log('About to exit with code:', code);
     navigation.stopAll()
+    arduinoInterface.sendCommand('STOP')
 });
 process.on('SIGINT', () => {
     console.log("Caught interrupt signal");
