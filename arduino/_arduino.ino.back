@@ -260,11 +260,11 @@ void loop() {
             selectedEnablePin = enableRightElevator;
             selectedStepper.setCurrentPosition(rightElevatorPosition);
         }
-        /*
-        Serial.print("ELEVATOR_GO_TO: Start with ");
-        Serial.print(stepper.currentPosition());
-        Serial.println(" position");
-        */
+        
+        // Serial.print("ELEVATOR_GO_TO: Start with ");
+        // Serial.print(stepper.currentPosition());
+        // Serial.println(" position");
+        
         int speed = commandParam3;
         if (speed == 0) {
             speed = 300; // default speed is 300
@@ -278,33 +278,32 @@ void loop() {
             isElevatorGoingToOrigin = true;
             selectedStepper.setSpeed(speed);
             // GO TO ORIGIN
-            // while (digitalRead(switchPin) == HIGH) {
-            //     stepper.setSpeed(speed); // origin is negative
-            //     stepper.runSpeed();
-            // }
-            // stepper.setCurrentPosition(0);
+            while (digitalRead(selectedSwitchPin) == HIGH) {
+                selectedStepper.setSpeed(speed); // origin is negative
+                selectedStepper.runSpeed();
+            }
+            selectedStepper.setCurrentPosition(0);
         } else {
-            // while(selectedStepper.currentPosition() != targetPosition)
-            // {
-            //     selectedStepper.setSpeed(speed);
-            //     selectedStepper.runSpeed();
-            // }
-            selectedStepper.
+            while(selectedStepper.currentPosition() != targetPosition)
+            {
+                selectedStepper.setSpeed(speed);
+                selectedStepper.runSpeed();
+            }
         }
 
         // disable the stepper
-        //digitalWrite(enablePin, HIGH);
+        digitalWrite(selectedEnablePin, HIGH);
 
-        // if (elevator == 0) {
-        //     leftElevatorPosition = stepper.currentPosition();
-        // }
-        // if (elevator == 1) {
-        //     rightElevatorPosition = stepper.currentPosition();
-        // }
+        if (selectedElevator == 0) {
+            leftElevatorPosition = selectedStepper.currentPosition();
+        }
+        if (selectedElevator == 1) {
+            rightElevatorPosition = selectedStepper.currentPosition();
+        }
 
-        // Serial.print("ELEVATOR_GO_TO: Done with ");
-        // Serial.print(stepper.currentPosition());
-        // Serial.println(" position");
+        Serial.print("ELEVATOR_GO_TO: Done with ");
+        Serial.print(selectedStepper.currentPosition());
+        Serial.println(" position");
       } else if (commandName == "CMD") {
         Serial.print("CMD: ");
         Serial.print(commandParam1);

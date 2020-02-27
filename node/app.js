@@ -11,12 +11,13 @@ let leftElevator = new (require('./src/Elevator'))({
     id: 0,
     pwmInterface,
     arduinoInterface,
-    clawSlot: 8
+    clawSlot: 11
 })
 let rightElevator = new (require('./src/Elevator'))({
     id: 1,
     pwmInterface,
-    arduinoInterface
+    arduinoInterface,
+    clawSlot: 10
 })
 let screenInterface = new (require('./src/ScreenInterface'))({arduinoInterface})
 
@@ -41,9 +42,13 @@ let radiusThreshold = 0.1
 let currentSpeed = minSpeed
 
 let isL2Triggered = false
+let isR2Triggered = false
 
 let leftSpeed = 0
 let leftOldSpeed = 0
+
+let rightSpeed = 0
+let rightOldSpeed = 0
 
 dualshock.on('l2Pressed', () => {
     console.log('l2 pressed!')
@@ -59,17 +64,39 @@ dualshock.on('l2Released', () => {
     leftSpeed = 0
 })
 
-dualshock.on('r1Pressed', () => {
+dualshock.on('l1Pressed', () => {
     leftElevator.toggleClaw()
+})
+
+/// RIGHT ELEVATOR
+dualshock.on('r2Pressed', () => {
+    console.log('r2 pressed!')
+    isR2Triggered = true
+})
+
+dualshock.on('r2Released', () => {
+    console.log('r2 released!')
+    isR2Triggered = false
+
+    rightElevator.setSpeed(0)
+    rightOldSpeed = 0
+    rightSpeed = 0
+})
+
+dualshock.on('r1Pressed', () => {
+    rightElevator.toggleClaw()
 })
 
 // dualshock.on('upPressed', () => {
 //     arduino.sendCommand('ELEVATOR_GO_TO', [0, -800, -125])
 // })
 
-// dualshock.on('squarePressed', () => {
-//     arduino.sendCommand('ELEVATOR_GO_TO', [0, -70, -125])
-// })
+dualshock.on('squarePressed', () => {
+    //arduino.sendCommand('ELEVATOR_GO_TO', [0, -70, -125]) // PRESET TO CATCH BUOS
+
+    console.log('RIGHT: Go to origin!')
+    rightElevator.goToOrigin()
+})
 
 // dualshock.on('l1Pressed', () => {
 //     arduino.sendCommand('ELEVATOR_GO_TO', [0, -650, -115])
@@ -122,6 +149,15 @@ dualshock.on('leftPressed', () => {
     leftElevator.setSpeed(leftSpeed)
 })
 
+dualshock.on('rightPressed', () => {
+    console.log('Toggle direction on right')
+    rightElevator.toggleDirection()
+    if ((rightElevator.getDirection() == 'END' && rightSpeed > 0) || (rightElevator.getDirection() == 'ORIGIN' && rightSpeed < 0)) {
+        rightSpeed = -rightSpeed
+    }
+    rightElevator.setSpeed(rightSpeed)
+})
+
 dualshock.on('analog', values => {
     //console.log('analog', values)
     let lStickX = values.lStickX
@@ -129,6 +165,7 @@ dualshock.on('analog', values => {
     let rStickX = values.rStickX
     let rStickY = -values.rStickY
     l2 = values['l2']
+    r2 = values['r2']
 
     let leftRadius = parseFloat(Math.sqrt(Math.abs(lStickX)**2 + Math.abs(lStickY)**2)).toFixed(2)
     let rightRadius = parseFloat(Math.sqrt(Math.abs(rStickX)**2 + Math.abs(rStickY)**2)).toFixed(2)
@@ -238,6 +275,31 @@ dualshock.on('analog', values => {
             console.log(leftSpeed)
             leftElevator.setSpeed(leftSpeed)
             leftOldSpeed = leftSpeed
+        }
+    }
+
+
+    if (isR2Triggered) {
+        rightSpeed = parseInt(mappyt(r2, -1, 1, 0, 400).toFixed(0))
+        
+        if (rightSpeed > 0 && rightSpeed < 100) {
+            rightSpeed = 100
+        } else if (rightSpeed >= 100 && rightSpeed < 200) {
+            rightSpeed = 200
+        } else if (rightSpeed >= 200 && rightSpeed < 300) {
+            rightSpeed = 300
+        } else if (rightSpeed >= 300 && rightSpeed <= 400) {
+            rightSpeed = 400
+        }
+        
+        if (rightElevator.getDirection() == 'END') {
+            rightSpeed = -rightSpeed
+        }
+
+        if (rightSpeed != rightOldSpeed) {
+            console.log(rightSpeed)
+            rightElevator.setSpeed(rightSpeed)
+            rightOldSpeed = rightSpeed
         }
     }
 })

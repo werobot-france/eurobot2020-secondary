@@ -52,6 +52,7 @@ CustomStepper drawer(dirDrawer, stepDrawer, enableDrawer, lsBackDrawer, lsFrontD
 
 LiquidCrystal_PCF8574 lcd(0x27);
 
+
 void setup() {
   Serial.begin(9600);
   Serial.setTimeout(50);
@@ -90,7 +91,6 @@ void loop() {
   }
   drawer.loop();
   leftElevator.loop();
-  rightElevator.loop();
 
   if (Serial.available()) {
     command = Serial.readStringUntil('\n');
@@ -150,20 +150,17 @@ void loop() {
          **/
       } else if (commandName == "ELEVATOR_SET_SPEED") {
         selectedElevator = commandParam1;
-        //Serial.println("Elevator set speed: " + selectedElevator + " with speed: " + commandParam2);
-
-        if (selectedElevator == 0) {
-            leftElevator.continuous(commandParam2);
-        } else {
-            rightElevator.continuous(commandParam2);
-        }
-        
         if (commandParam2 == 0) {
             if (selectedElevator == 0) {
                 leftElevator.stop();
             } else {
                 rightElevator.stop();
             }
+        }
+        if (selectedElevator == 0) {
+            leftElevator.continuous(commandParam2);
+        } else {
+            rightElevator.continuous(commandParam2);
         }
       } else if (commandName == "CMD") {
         Serial.print("CMD: ");
