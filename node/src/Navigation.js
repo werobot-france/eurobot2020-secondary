@@ -81,6 +81,15 @@ module.exports = class Navigation {
         this.northWestTranslation(-speed)
     }
 
+    stop() {
+        this.setSpeed({
+            'frontLeft': 0,
+            'frontRight': 0,
+            'backLeft': 0,
+            'backRight': 0
+        })
+    }
+
     stopAll() {
         this.setSpeed({
             'frontLeft': 0,

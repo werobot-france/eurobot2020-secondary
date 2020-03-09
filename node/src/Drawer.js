@@ -37,7 +37,7 @@ module.exports = class Drawer {
     }
     
     closeSqueezer() {
-        this.pwmInterface.setAngle(this.squeezerSlot, 160)
+        this.pwmInterface.setAngle(this.squeezerSlot, 175)
         this.squeezerOpened = false
 
         console.log('squeezer closed')

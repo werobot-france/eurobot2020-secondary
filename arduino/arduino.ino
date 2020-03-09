@@ -83,13 +83,13 @@ void setup() {
 int selectedElevator = 0;
 
 void loop() {
-  if (digitalRead(button) == HIGH) {
-    digitalWrite(led, HIGH);
-  } else {
-    digitalWrite(led, LOW);
-  }
-  drawer.loop();
+//   if (digitalRead(button) == HIGH) {
+//     digitalWrite(led, HIGH);
+//   } else {
+//     digitalWrite(led, LOW);
+//   }
   leftElevator.loop();
+  drawer.loop();
   rightElevator.loop();
 
   if (Serial.available()) {
@@ -132,6 +132,8 @@ void loop() {
 
       } else if (commandName == "PING") {
         Serial.println("L: Pong!");
+      } else if (commandName == "ACCL") {
+        leftElevator.setAcceleration(commandParam1);
       } else if (commandName == "DRAWER_GO_TO_BACK") {
         
         drawer.continuous(commandParam1);
@@ -140,10 +142,27 @@ void loop() {
         
         drawer.continuous(-commandParam1);
 
+      } else if (commandName == "GET_CURRENT_POSITION") {
+        
+        Serial.print(leftElevator.getCurrentPosition());
+        Serial.print(" - ");
+        Serial.println(rightElevator.getCurrentPosition());
+
       } else if (commandName == "ELEVATOR_GO_TO") {
         /**
          * Command ELEVATOR_GO_TO
          **/
+        int speed = commandParam3;
+        if (speed == 0) {
+            speed = 200;
+        }
+
+        selectedElevator = commandParam1;
+        if (selectedElevator == 0) {
+            leftElevator.goTo(commandParam2, speed);
+        } else {
+            rightElevator.goTo(commandParam2, speed);
+        }
 
         /**
          * -850 step maximum

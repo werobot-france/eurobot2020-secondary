@@ -9,18 +9,23 @@ let drawer = new (require('./src/Drawer'))({
 })
 let leftElevator = new (require('./src/Elevator'))({
     id: 0,
+    label: 'left',
     pwmInterface,
     arduinoInterface,
     clawSlot: 11
 })
 let rightElevator = new (require('./src/Elevator'))({
     id: 1,
+    label: 'right',
     pwmInterface,
     arduinoInterface,
     clawSlot: 10
 })
 let screenInterface = new (require('./src/ScreenInterface'))({arduinoInterface})
 let flags = new (require('./src/Flag'))({pwmInterface, servoSlot: 4})
+
+let stacker = new (require('./src/Stacker'))({leftElevator, rightElevator, navigation})
+let unStacker = new (require('./src/UnStacker'))({leftElevator, rightElevator, navigation, drawer})
 
 let dualshock = new Dualshock()
 
@@ -36,7 +41,7 @@ let mappyt = (x, inMin, inMax, outMin, outMax) => {
 }
 
 let minSpeed = 0
-let maxSpeed = 100
+let maxSpeed = 40
 
 let radiusThreshold = 0.1
 
@@ -205,35 +210,35 @@ dualshock.on('analog', values => {
             currentSpeed = mappyt(rightRadius, 0, 1, minSpeed, maxSpeed)
 
             if (rStickY < 0.5 * rStickX && rStickY >= -0.5 * rStickX) {
-                console.log('east translation')
+                //console.log('east translation')
                 navigation.eastTranslation(currentSpeed)
             }
             if (rStickY > 0.5 * rStickX && rStickY <= 2 * rStickX) {
-                console.log('north east translation')
+                //console.log('north east translation')
                 navigation.northEastTranslation(currentSpeed)
             }
             if (rStickY > 2 * rStickX && rStickY >= -2 * rStickX) {
-                console.log('north translation')
+                //console.log('north translation')
                 navigation.northTranslation(currentSpeed)
             }
             if (rStickY < -2 * rStickX && rStickY >= -0.5 * rStickX) {
-                console.log('south east translation')
+                //console.log('south east translation')
                 navigation.southEastTranslation(currentSpeed)
             }
             if (rStickY < -0.5 * rStickX && rStickY >= 0.5 * rStickX) {
-                console.log('west translation')
+                //console.log('west translation')
                 navigation.westTranslation(currentSpeed)
             }
             if (rStickY < 0.5 * rStickX && rStickY >= 2 * rStickX) {
-                console.log('south west translation')
+                //console.log('south west translation')
                 navigation.southWestTranslation(currentSpeed)
             }
             if (rStickY < 2 * rStickX && rStickY <= -2 * rStickX) {
-                console.log('south translation')
+                //console.log('south translation')
                 navigation.southTranslation(currentSpeed)
             }
             if (rStickY > -2 * rStickX && rStickY <= -0.5 * rStickX) {
-                console.log('north west translation')
+                //console.log('north west translation')
                 navigation.northWestTranslation(currentSpeed)
             }
         }
@@ -242,7 +247,7 @@ dualshock.on('analog', values => {
 
             currentSpeed = mappyt(leftRadius, 0, 1, minSpeed, maxSpeed)
 
-            console.log('clockwise')
+            //console.log('clockwise')
             navigation.clockwiseRotation(currentSpeed)
         }
 
@@ -250,7 +255,7 @@ dualshock.on('analog', values => {
 
             currentSpeed = mappyt(leftRadius, 0, 1, minSpeed, maxSpeed)
 
-            console.log('anticlockwise')
+            //console.log('anticlockwise')
             navigation.antiClockwiseRotation(currentSpeed)
         }
     }
@@ -261,11 +266,11 @@ dualshock.on('analog', values => {
         if (leftSpeed > 0 && leftSpeed < 100) {
             leftSpeed = 100
         } else if (leftSpeed >= 100 && leftSpeed < 200) {
-            leftSpeed = 200
+            leftSpeed = 250
         } else if (leftSpeed >= 200 && leftSpeed < 300) {
-            leftSpeed = 300
+            leftSpeed = 500
         } else if (leftSpeed >= 300 && leftSpeed <= 400) {
-            leftSpeed = 400
+            leftSpeed = 750
         }
         
         if (leftElevator.getDirection() == 'END') {
@@ -273,12 +278,11 @@ dualshock.on('analog', values => {
         }
 
         if (leftSpeed != leftOldSpeed) {
-            console.log(leftSpeed)
+            //console.log(leftSpeed)
             leftElevator.setSpeed(leftSpeed)
             leftOldSpeed = leftSpeed
         }
     }
-
 
     if (isR2Triggered) {
         rightSpeed = parseInt(mappyt(r2, -1, 1, 0, 400).toFixed(0))
@@ -286,11 +290,11 @@ dualshock.on('analog', values => {
         if (rightSpeed > 0 && rightSpeed < 100) {
             rightSpeed = 100
         } else if (rightSpeed >= 100 && rightSpeed < 200) {
-            rightSpeed = 200
+            rightSpeed = 250
         } else if (rightSpeed >= 200 && rightSpeed < 300) {
-            rightSpeed = 300
+            rightSpeed = 500
         } else if (rightSpeed >= 300 && rightSpeed <= 400) {
-            rightSpeed = 400
+            rightSpeed = 750
         }
         
         if (rightElevator.getDirection() == 'END') {
@@ -298,12 +302,180 @@ dualshock.on('analog', values => {
         }
 
         if (rightSpeed != rightOldSpeed) {
-            console.log(rightSpeed)
+            //  console.log(rightSpeed)
             rightElevator.setSpeed(rightSpeed)
             rightOldSpeed = rightSpeed
         }
     }
 })
+
+dualshock.on('upPressed', () => {
+    arduinoInterface.sendCommand('ELEVATOR_GO_TO#0#-860#800');
+})
+dualshock.on('downPressed', () => {
+    arduinoInterface.sendCommand('ELEVATOR_GO_TO#0#-383#800');
+})
+
+// dualshock.on('l3Pressed', () => {
+//     leftElevator.closeClawGround()
+// })
+// dualshock.on('r3Pressed', () => {
+//     rightElevator.closeClawGround()
+// })
+dualshock.on('padPressed', () => {
+    //stacker.stackRoutine(['G', 'G', 'R', 'R', 'R'])
+    unStacker.unStackRoutine()
+})
+
+
+function wait(timeout) {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve()
+        }, timeout)
+    })
+}
+
+function confirm() {
+    return new Promise((resolve, reject) => {
+        var standard_input = process.stdin;
+
+        // Set input character encoding.
+        standard_input.setEncoding('utf-8');
+
+        // Prompt user to input data in console.
+        console.log("Confirm");
+
+        // When user input data and click enter key.
+        standard_input.on('data', (data) => {
+            resolve()
+        });
+    })
+}
+
+dualshock.on('sharePressed', async () => {
+    arduinoInterface.sendCommand('GET_CURRENT_POSITION');
+    
+    return
+    // manual initialization
+    // leftElevator.closeClaw()
+
+    // leftElevator.goToOrigin()
+    // console.log('MANUAL INITIALIZATION DONE')
+
+    // return
+
+    /*
+    routine prendr Verre
+    elevator.goToMiddle()
+    elevator.openClaw()
+    navigation.eastTranslation()
+    elevator.goToOrigin()
+    navigation.westTranslation()
+    elevator.closeClaw()
+    elevator.goToTop()
+    */
+    /*
+    routine attrapage
+    situation n°3 Yellow team
+    GGRRR
+
+    leftElevator.goToTop()
+    // deplacement callage vers au dessus du vers
+    navigation.westTranslation()
+    await
+    this.takeBuos(leftElevator)
+    // decallage d'une boue
+    navigation.westTranslation()
+    await 
+    this.takeBuos(leftElevator)
+    // decallage d'une boue
+    navigation.westTranslation()
+    await 
+    this.takeBuos(leftElevator)
+    navigation.westTranslation()
+    // decallage de deux bouées
+    await
+    this.takeBuos(rightElevator)
+    // decallage d'une boue
+    navigation.westTranslation()
+    await 
+    this.takeBuos(rightElevator)
+    */
+
+    await wait(1000)
+    leftElevator.goToTop()
+    await wait(1 * 1000)
+    await confirm()
+    navigation.westTranslation(50)
+    await wait(0.82 * 1000)
+    navigation.stopAll()
+    leftElevator.goToMiddle()
+    await wait(1000)
+    leftElevator.openClaw()
+    await wait(700)
+    navigation.northTranslation(30)
+    await wait(400)
+    navigation.stopAll()
+    await confirm()
+    navigation.eastTranslation(30)
+    await wait(0.45 * 1000)
+    navigation.stopAll()
+    leftElevator.goToOrigin()
+    await wait(0.8 * 1000)
+    await confirm()
+    navigation.westTranslation(30)
+    await wait(0.45 * 1000)
+    navigation.stopAll()
+    leftElevator.closeClaw()
+    await wait(0.8 * 1000)
+    leftElevator.goToTop()
+    await wait(0.5 * 1000)
+    await confirm()
+    navigation.westTranslation(30)
+    await wait(0.40 * 1000)
+    navigation.stopAll()
+    await confirm()
+    leftElevator.goToMiddle()
+    await wait(0.40 * 1000)
+    leftElevator.openClaw()
+    await confirm()
+    navigation.eastTranslation(30)
+    await wait(0.45 * 1000)
+    navigation.stopAll()
+    leftElevator.goToOrigin()
+    await wait(0.8 * 1000)
+    await confirm()
+    navigation.westTranslation(30)
+    await wait(0.45 * 1000)
+    navigation.stopAll()
+    leftElevator.closeClaw()
+    await wait(0.8 * 1000)
+    leftElevator.goToTop()
+    await wait(0.5 * 1000)
+    await confirm()
+    navigation.westTranslation(30)
+    await wait(0.40 * 1000)
+    navigation.stopAll()
+    await confirm()
+    leftElevator.goToMiddle()
+    await wait(0.40 * 1000)
+    leftElevator.openClaw()
+    await confirm()
+    navigation.eastTranslation(30)
+    await wait(0.45 * 1000)
+    navigation.stopAll()
+    leftElevator.goToOrigin()
+    await wait(0.8 * 1000)
+    await confirm()
+    navigation.westTranslation(30)
+    await wait(0.45 * 1000)
+    navigation.stopAll()
+    leftElevator.closeClaw()
+    await wait(0.8 * 1000)
+    leftElevator.goToTop()
+})
+
 
 let main = async () => {
     await pwmInterface.init()
@@ -317,6 +489,8 @@ let main = async () => {
     await navigation.stopAll()
 
     await arduinoInterface.init()
+
+    arduinoInterface.sendCommand('ACCL#100000');
 
     screenInterface.init()
     screenInterface.print([
@@ -360,3 +534,8 @@ process.on('SIGINT', () => {
 });
 
 main()
+
+/**
+ * Linear map mappy(0, 0.9, 0, a*1000)
+ * Linear map mappy(0.9, 1, a*1000, 1)
+ */

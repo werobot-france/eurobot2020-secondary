@@ -47,3 +47,8 @@
 ## bluetooth
 
 rfkill unblock bluetooth
+
+## TODO
+
+- disable feature on elevator
+- disable elevator until go to origin to prevent steps jumps

@@ -36,7 +36,7 @@ module.exports = class Dualshock extends EventEmitter {
                     button = 'options'
                 if (button === 'select')
                     button = 'share'
-                //console.log(button, value)
+                console.log(button, value)
                 if (value)
                     this.emit(button + 'Pressed')
                 else

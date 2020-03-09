@@ -8,6 +8,7 @@ class CustomStepper
         int originSwitchPin;
         int endSwitchPin;
         int runningSpeed;
+        bool moveTask;
         AccelStepper stepper;
 
     public:
@@ -15,8 +16,11 @@ class CustomStepper
         void enable();
         void disable();
         int getEnablePin();
+        int getCurrentPosition();
         void loop();
         void continuous(int speed);
         void stop();
         void init();
+        void goTo(int position, int speed);
+        void setAcceleration(int accl);
 };
