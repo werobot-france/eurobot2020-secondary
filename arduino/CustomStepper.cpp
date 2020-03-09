@@ -22,7 +22,7 @@ void CustomStepper::init()
         pinMode(this->endSwitchPin, INPUT);
     }
     this->disable();
-    this->stepper.setMaxSpeed(1000);
+    this->stepper.setMaxSpeed(400);
     this->stepper.setAcceleration(10000);
     this->moveTask = false;
 }
@@ -46,6 +46,10 @@ void CustomStepper::loop()
 {
     if (this->moveTask) {
         this->stepper.run();
+        if (this->stepper.currentPosition() == this->targetPosition) {
+            Serial.println("CUSTOM_STEPPER: Go to done");
+            this->targetPosition = 0;
+        }
     } else {
         this->stepper.runSpeed();
     }
@@ -83,6 +87,7 @@ void CustomStepper::goTo(int position, int speed)
     this->runningSpeed = 0;
     this->enable();
     this->moveTask = true;
+    this->targetPosition = position;
     this->stepper.setSpeed(speed);
     this->stepper.moveTo(position);
 }

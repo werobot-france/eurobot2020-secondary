@@ -9,6 +9,7 @@ class CustomStepper
         int endSwitchPin;
         int runningSpeed;
         bool moveTask;
+        int targetPosition;
         AccelStepper stepper;
 
     public:

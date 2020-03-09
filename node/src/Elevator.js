@@ -40,23 +40,24 @@ module.exports = class Elevator {
         }
     }
 
-    goToMiddle() {
-        this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -383, 800]);
+    async goToMiddle() {
+        await this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -383, 800]);
     }
 
-    goToTop() {
-        this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -850, 800]);
+    async goToTop() {
+        await this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -850, 400]);
     }
 
-    goToUnStackPos() {
-        this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -96, 800]);
+    async goToUnStackPos() {
+        await this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -96, 800]);
+
     }
 
-    setSpeed(speed) {
+    async setSpeed(speed) {
         this.arduinoInterface.sendCommand('ELEVATOR_SET_SPEED', [this.id, speed])
     }
 
-    getDirection() {
+    async getDirection() {
         return this.direction
     }
 

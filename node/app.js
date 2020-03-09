@@ -354,7 +354,9 @@ function confirm() {
 }
 
 dualshock.on('sharePressed', async () => {
-    arduinoInterface.sendCommand('GET_CURRENT_POSITION');
+    //arduinoInterface.sendCommand('GET_CURRENT_POSITION');
+    await leftElevator.goToTop()
+    console.log('go to top DONE')
     
     return
     // manual initialization
