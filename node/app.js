@@ -323,8 +323,8 @@ dualshock.on('downPressed', () => {
 //     rightElevator.closeClawGround()
 // })
 dualshock.on('padPressed', () => {
-    //stacker.stackRoutine(['G', 'G', 'R', 'R', 'R'])
-    unStacker.unStackRoutine()
+    stacker.stackRoutine(['G', 'G', 'R', 'R', 'R'])
+    //unStacker.unStackRoutine()
 })
 
 
