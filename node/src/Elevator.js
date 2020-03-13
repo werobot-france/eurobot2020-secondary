@@ -8,6 +8,15 @@ module.exports = class Elevator {
         this.arduinoInterface = params.arduinoInterface
         this.clawOpened = false
         this.direction = 'ORIGIN' // positive
+        this.enabled = true
+    }
+
+    disable() {
+        this.enabled = false
+    }
+
+    enable() {
+        this.enabled = true
     }
 
     getLabel() {
@@ -40,20 +49,25 @@ module.exports = class Elevator {
         }
     }
 
-    async goToMiddle() {
-        await this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -383, 800]);
+    async goToMiddle() { await this.goTo(383, 800) }
+
+    async goToTop() { await this.goTo(850, 400) }
+
+    async goToUnStackPos() { await this.goTo(96, 800) }
+
+    setAcceleration(value) {
+        this.arduinoInterface.sendCommand('ELEVATOR_SET_ACCELERATION', [this.id, value]);
     }
 
-    async goToTop() {
-        await this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -850, 400]);
-    }
-
-    async goToUnStackPos() {
-        await this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -96, 800]);
-
+    async goTo(position, speed) {
+        if (!this.enabled)
+            return false
+        await this.arduinoInterface.sendCommand('ELEVATOR_GO_TO', [this.id, -position, speed]);
     }
 
     async setSpeed(speed) {
+        if (!this.enabled)
+            return false
         this.arduinoInterface.sendCommand('ELEVATOR_SET_SPEED', [this.id, speed])
     }
 

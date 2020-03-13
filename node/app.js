@@ -1,8 +1,15 @@
-const Dualshock = require('./src/Dualshock')
+
+/**
+ * Low hardware layer
+ */
+let dualshock = new (require('./src/Dualshock'))()
 let pwmInterface = new (require('./src/PWMInterface'))()
 let arduinoInterface = new (require('./src/ArduinoInterface'))("/dev/ttyUSB_NANO")
-let navigation = new (require('./src/Navigation'))(pwmInterface)
 
+/**
+ * High hardware layer
+ */
+let navigation = new (require('./src/Navigation'))(pwmInterface)
 let drawer = new (require('./src/Drawer'))({
     pwmInterface,
     arduinoInterface
@@ -24,17 +31,22 @@ let rightElevator = new (require('./src/Elevator'))({
 let screenInterface = new (require('./src/ScreenInterface'))({arduinoInterface})
 let flags = new (require('./src/Flag'))({pwmInterface, servoSlot: 4})
 
+/**
+ * Routines
+ */
 let stacker = new (require('./src/Stacker'))({leftElevator, rightElevator, navigation})
 let unStacker = new (require('./src/UnStacker'))({leftElevator, rightElevator, navigation, drawer})
 
-let dualshock = new Dualshock()
-
 const process = require('process')
+
+dualshock.on('connected', () => {
+    dualshock.rumble(0.5, 0.5, 1)
+    dualshock.setLed(0, 0, 255)
+})
 
 dualshock.on('crossPressed', () => {
     console.log('cross pressed!')
 })
-
 
 let mappyt = (x, inMin, inMax, outMin, outMax) => {
     return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
@@ -143,7 +155,7 @@ dualshock.on('crossPressed', () => {
 dualshock.on('psPressed', () => {
     console.log('EMERGENCY STOP!')
     arduinoInterface.sendCommand('STOP')
-    navigation.stopAll()
+    pwmInterface.stop()
 })
 
 dualshock.on('leftPressed', () => {
@@ -191,7 +203,7 @@ dualshock.on('analog', values => {
     */
     if (rightRadius <= radiusThreshold && leftRadius <= radiusThreshold) {
         //console.log('STOP ALL')
-        navigation.stopAll()
+        navigation.stop()
     } else {
         // if (isL2Triggered) {
         //     //currentSpeed = mappyt(l2, -1, 1, 0, 1) * 100
@@ -207,7 +219,15 @@ dualshock.on('analog', values => {
         
         if (!(rightRadius <= radiusThreshold)) {
 
-            currentSpeed = mappyt(rightRadius, 0, 1, minSpeed, maxSpeed)
+            /**
+             * Linear map mappy(0, 0.9, 0, a*1000)
+             * Linear map mappy(0.9, 1, a*1000, 1)
+             */
+            if (rightRadius <= 0.9) {
+                currentSpeed = mappyt(rightRadius, 0, 0.9, minSpeed, maxSpeed)
+            } else {
+                currentSpeed = mappyt(rightRadius, 0.9, 1, maxSpeed, 100)
+            }
 
             if (rStickY < 0.5 * rStickX && rStickY >= -0.5 * rStickX) {
                 //console.log('east translation')
@@ -329,25 +349,16 @@ dualshock.on('padPressed', () => {
 
 
 function wait(timeout) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve()
-        }, timeout)
+    return new Promise(resolve => {
+        setTimeout(resolve, timeout)
     })
 }
 
 function confirm() {
-    return new Promise((resolve, reject) => {
-        var standard_input = process.stdin;
-
-        // Set input character encoding.
-        standard_input.setEncoding('utf-8');
-
-        // Prompt user to input data in console.
-        console.log("Confirm");
-
-        // When user input data and click enter key.
-        standard_input.on('data', (data) => {
+    return new Promise(resolve => {
+        process.stdin.setEncoding('utf-8');
+        console.log("Confirm ?");
+        process.stdin.on('data', () => {
             resolve()
         });
     })
@@ -411,24 +422,24 @@ dualshock.on('sharePressed', async () => {
     await confirm()
     navigation.westTranslation(50)
     await wait(0.82 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     leftElevator.goToMiddle()
     await wait(1000)
     leftElevator.openClaw()
     await wait(700)
     navigation.northTranslation(30)
     await wait(400)
-    navigation.stopAll()
+    navigation.stop()
     await confirm()
     navigation.eastTranslation(30)
     await wait(0.45 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     leftElevator.goToOrigin()
     await wait(0.8 * 1000)
     await confirm()
     navigation.westTranslation(30)
     await wait(0.45 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     leftElevator.closeClaw()
     await wait(0.8 * 1000)
     leftElevator.goToTop()
@@ -436,7 +447,7 @@ dualshock.on('sharePressed', async () => {
     await confirm()
     navigation.westTranslation(30)
     await wait(0.40 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     await confirm()
     leftElevator.goToMiddle()
     await wait(0.40 * 1000)
@@ -444,13 +455,13 @@ dualshock.on('sharePressed', async () => {
     await confirm()
     navigation.eastTranslation(30)
     await wait(0.45 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     leftElevator.goToOrigin()
     await wait(0.8 * 1000)
     await confirm()
     navigation.westTranslation(30)
     await wait(0.45 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     leftElevator.closeClaw()
     await wait(0.8 * 1000)
     leftElevator.goToTop()
@@ -458,7 +469,7 @@ dualshock.on('sharePressed', async () => {
     await confirm()
     navigation.westTranslation(30)
     await wait(0.40 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     await confirm()
     leftElevator.goToMiddle()
     await wait(0.40 * 1000)
@@ -466,13 +477,13 @@ dualshock.on('sharePressed', async () => {
     await confirm()
     navigation.eastTranslation(30)
     await wait(0.45 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     leftElevator.goToOrigin()
     await wait(0.8 * 1000)
     await confirm()
     navigation.westTranslation(30)
     await wait(0.45 * 1000)
-    navigation.stopAll()
+    navigation.stop()
     leftElevator.closeClaw()
     await wait(0.8 * 1000)
     leftElevator.goToTop()
@@ -488,7 +499,7 @@ let main = async () => {
     // // close claw
     // pwmInterface.setAngle(11, 180)
     
-    await navigation.stopAll()
+    await navigation.stop()
 
     await arduinoInterface.init()
 
@@ -526,7 +537,7 @@ let main = async () => {
 
 process.on('exit', (code) => {   
     console.log('About to exit with code:', code);
-    navigation.stopAll()
+    pwmInterface.stop()
     arduinoInterface.sendCommand('STOP')
 });
 process.on('SIGINT', () => {
@@ -536,8 +547,3 @@ process.on('SIGINT', () => {
 });
 
 main()
-
-/**
- * Linear map mappy(0, 0.9, 0, a*1000)
- * Linear map mappy(0.9, 1, a*1000, 1)
- */

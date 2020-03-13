@@ -26,7 +26,9 @@ module.exports = class Dualshock extends EventEmitter {
                 moveDeadband: 4
             })
     
-            console.log('New device detected: ', device)
+            console.log('> DUALSHOCK: Device detected: ', device)
+            
+            this.emit('connected')
             
             this.controller.ondigital = (button, value) => {
                 let ignored = ['a', 'b', 'x', 'y']
@@ -36,7 +38,7 @@ module.exports = class Dualshock extends EventEmitter {
                     button = 'options'
                 if (button === 'select')
                     button = 'share'
-                console.log(button, value)
+                //console.log(button, value)
                 if (value)
                     this.emit(button + 'Pressed')
                 else
@@ -53,7 +55,7 @@ module.exports = class Dualshock extends EventEmitter {
                 this.emit('analog', this.analogValues)
             }
             this.controller.ondisconnect = () => {
-                console.log('> Disconnexion')
+                console.log('> DUALSHOCK: Device disconnected')
                 this.connect()
             }
             // gamepad.onmotion = (data, d1) => {
@@ -72,4 +74,17 @@ module.exports = class Dualshock extends EventEmitter {
         }
     }
 
+    setLed(red = 0, green = 0, blue = 0) {
+        this.controller.setLed(red, green, blue)
+    }
+
+    rumble(left, right, timeout) {
+        return new Promise(resolve => {
+            this.controller.rumble(left, right)
+            setTimeout(() => {
+                this.controller.rumble(0, 0)
+                resolve()
+            }, timeout * 1000)
+        })
+    }
 }

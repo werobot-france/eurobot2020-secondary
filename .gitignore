@@ -118,3 +118,8 @@ dmypy.json
 .pyre/
 
 # End of https://www.gitignore.io/api/code,python
+
+# arduino binary 
+
+*.elf
+*.hex
