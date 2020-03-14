@@ -40,8 +40,9 @@ let unStacker = new (require('./src/UnStacker'))({leftElevator, rightElevator, n
 const process = require('process')
 
 dualshock.on('connected', () => {
-    dualshock.rumble(0.5, 0.5, 1)
-    dualshock.setLed(0, 0, 255)
+    console.log('> MAIN: Controller connected!')
+    // dualshock.rumble(0.5, 0.5, 1)
+    // dualshock.setLed(0, 0, 255)
 })
 
 dualshock.on('crossPressed', () => {
@@ -535,15 +536,13 @@ let main = async () => {
     // }, 100 * 1000)
 }
 
-process.on('exit', (code) => {   
-    console.log('About to exit with code:', code);
+process.on('SIGINT', () => {
+    console.log("> EXIT: Caught interrupt signal");
     pwmInterface.stop()
     arduinoInterface.sendCommand('STOP')
-});
-process.on('SIGINT', () => {
-    console.log("Caught interrupt signal");
-
-    process.exit();
+    setTimeout(() => {
+        process.exit();
+    }, 500)
 });
 
 main()

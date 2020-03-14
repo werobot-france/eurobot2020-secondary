@@ -1,47 +1,47 @@
 const SerialPort = require('serialport')
 
-module.exports = class ArduinoInterface {
+module.exports = class Arduino {
 
-    constructor(path) {
-        this.port = new SerialPort(path, {baudRate: 9600})
+    constructor() {
+        this.port = new SerialPort('/dev/ttyUSB_NANO', {baudRate: 9600})
 
         this.port.on('error', function(err) {
-            console.log('Error: ', err.message)
+            console.log('ARDUINO: Serial port error: ', err.message)
         })
     }
 
     init() {
-        console.log('> Wait for arduino serial connexion...')
-        return new Promise((resolve, reject) => {
+        console.log('> ARDUINO: Wait for arduino serial connexion...')
+        return new Promise((resolve) => {
             // this.sendCommand('PING').then(() => {
             //     console.log('INIT DONE!')
             // })
             setTimeout(() => {
                 resolve()
-            }, 2000)
+            }, 1000)
         })
     }
 
     sendCommand(name, params = []) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             let toSend = name
             params.forEach(element => {
                 toSend += "#" + element
             });
-            console.log(toSend)
+            //console.log(toSend)
+            
             toSend += "\n"
-
 
             this.port.removeAllListeners('data')
             this.port.on('data', (data) => {
-                console.log(data.toString())
+                //console.log(data.toString())
                 resolve()
             })
             this.port.write(toSend, (err) => {
                 if (err) {
-                    return console.log('Error on write: ', err.message)
+                    return console.log('ARDUINO: Error on write: ', err.message)
                 }
-                console.log('message written')
+                //console.log('message written')
             })
         })
     }
