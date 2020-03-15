@@ -1,12 +1,14 @@
 const SerialPort = require('serialport')
 
-module.exports = class Arduino {
+module.exports = class ArduinoInterface {
 
-    constructor() {
-        this.port = new SerialPort('/dev/ttyUSB_NANO', {baudRate: 9600})
+    constructor(path, label, baudRate = 9600) {
+        this.path = path
+        this.label = label
+        this.port = new SerialPort(this.path, {baudRate})
 
-        this.port.on('error', function(err) {
-            console.log('ARDUINO: Serial port error: ', err.message)
+        this.port.on('error', (err) => {
+            console.log(`ARDUINO: Serial error on port (${this.path} - ${this.label}):`, err.message)
         })
     }
 
@@ -39,7 +41,7 @@ module.exports = class Arduino {
             })
             this.port.write(toSend, (err) => {
                 if (err) {
-                    return console.log('ARDUINO: Error on write: ', err.message)
+                    return console.log(`ARDUINO: Write error on port (${this.path} - ${this.label}):`, err.message)
                 }
                 //console.log('message written')
             })
