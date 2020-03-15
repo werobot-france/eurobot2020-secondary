@@ -41,8 +41,8 @@ const process = require('process')
 
 dualshock.on('connected', () => {
     console.log('> MAIN: Controller connected!')
-    // dualshock.rumble(0.5, 0.5, 1)
-    // dualshock.setLed(0, 0, 255)
+    dualshock.rumble(150, 150, 0, 0, 0.2)
+    dualshock.setLed(0, 255, 255)
 })
 
 dualshock.on('crossPressed', () => {
@@ -504,15 +504,15 @@ let main = async () => {
 
     await arduinoInterface.init()
 
-    arduinoInterface.sendCommand('ACCL#100000');
+    //arduinoInterface.sendCommand('ACCL#100000');
 
-    screenInterface.init()
-    screenInterface.print([
+    //screenInterface.init()
+    /*screenInterface.print([
         "Hello, World!",
         "Go to werobot.fr"
-    ])
+    ])*/
     
-    flags.close()
+    //flags.close()
 
     // await arduino.sendCommand('ELEVATOR_GO_TO', [0, 0])
 
@@ -528,6 +528,7 @@ let main = async () => {
     console.log('Init sequence done')
 
     // TODO: Start a timer which end after 100 seconds or 1 min and 40 seconds WHEN the match start
+    // DO NOT ACCEPT ANY INPUT FROM THE CONTROLLER
     // flag.startTimer()
     // setTimeout(() => {
     //     console.log('END OF THE MATCH !!')
