@@ -1,0 +1,42 @@
+/*Example sketch to control a stepper motor with A4988 stepper motor driver, AccelStepper library and Arduino: continuous rotation. More info: https://www.makerguides.com */
+// Include the AccelStepper library:
+#include <AccelStepper.h>
+// Define stepper motor connections and motor interface type. Motor interface type must be set to 1 when using a driver:
+#define dirPin 12
+#define stepPin 11
+#define enablePin 10
+#define motorInterfaceType 1
+#define frontSwitch 3
+#define backSwitch 4
+
+AccelStepper stepper = AccelStepper(motorInterfaceType, stepPin, dirPin);
+void setup() {
+  pinMode(enablePin, OUTPUT);
+  digitalWrite(enablePin, HIGH);
+  stepper.setMaxSpeed(1000);
+
+  digitalWrite(enablePin, LOW);
+  
+  while(digitalRead(backSwitch) == HIGH)
+  {
+    stepper.setSpeed(100);
+    stepper.runSpeed();
+  }
+
+  stepper.setCurrentPosition(0);
+  digitalWrite(enablePin, HIGH);
+
+  delay(3000);
+
+  digitalWrite(enablePin, LOW);
+  while(digitalRead(frontSwitch) == HIGH)
+  {
+    stepper.setSpeed(-100);
+    stepper.runSpeed();
+  }
+  
+  digitalWrite(enablePin, HIGH);
+  delay(1000);
+}
+void loop() {
+}

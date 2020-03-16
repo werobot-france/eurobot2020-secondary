@@ -1,0 +1,78 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include <SoftwareSerial.h>
+
+String command = "";
+String commandName = "";
+int commandParam1 = 0;
+int commandParam2 = 0;
+int commandParam3 = 0;
+int commandParam4 = 0;
+
+void setup() {
+  Serial.begin(115200);
+  Serial.setTimeout(50);
+  Serial.println("L: Ready");
+}
+
+void loop() {
+  if (Serial.available()) {
+    command = Serial.readStringUntil('\n');
+    // Serial.println(command);
+    if (command != "") {
+      commandName = command.substring(0, command.indexOf("#"));
+
+      // Parse command arguments (1, 2, 3)
+      String raw1 = command.substring(command.indexOf("#") + 1, command.length());
+      if (raw1 != command) {
+        commandParam1 = raw1.substring(0, raw1.indexOf("#")).toInt();
+
+        String raw2 = raw1.substring(raw1.indexOf("#") + 1, raw1.length());
+        //        Serial.println(raw2);
+
+        if (raw2 != raw1) {
+          if (raw2.indexOf("#") != -1) {
+            commandParam2 = raw2.substring(0, raw2.indexOf("#")).toInt();
+
+            String raw3 = raw2.substring(raw2.indexOf("#") + 1, raw2.length());
+            if (raw3 != raw2) {
+              if (raw3.indexOf("#") != -1) {
+                commandParam3 = raw3.substring(0, raw3.indexOf("#")).toInt();
+                commandParam4 = raw3.substring(raw3.indexOf("#") + 1, raw3.length()).toInt();
+              } else {
+                commandParam3 = raw3.substring(0, raw3.length()).toInt();
+              }
+            }
+          } else {
+            commandParam2 = raw2.substring(0, raw2.length()).toInt();
+          }
+        }
+      }
+
+      if (commandName == "RESET") {
+        Serial.println("L: Reset!");
+
+      } else if (commandName == "PING") {
+        Serial.println("L: Pong!");
+
+      } else if (commandName == "CMD") {
+        Serial.print("L: CMD - ");
+        Serial.print(commandParam1);
+        Serial.print("  ");
+        Serial.print(commandParam2);
+        Serial.print("  ");
+        Serial.print(commandParam3);
+        Serial.print("  ");
+        Serial.println(commandParam4);
+      }
+      else {
+        Serial.println("E: invalid commandName");
+      }
+
+      commandParam1 = 0;
+      commandParam2 = 0;
+      commandParam3 = 0;
+      commandParam4 = 0;
+    }
+  }
+}

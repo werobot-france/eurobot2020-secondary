@@ -1,0 +1,23 @@
+#define limitSwitchAPin 14 # BACK DRAWER
+#define limitSwitchBPin 15 # FRONT DRAWER
+#define limitSwitchCPin 8 # LEFT ELEVATOR
+#define limitSwitchDPin 9 # RIGHT ELEVATOR
+
+void setup() {
+    pinMode(limitSwitchAPin, INPUT);
+    pinMode(limitSwitchBPin, INPUT);
+    pinMode(limitSwitchCPin, INPUT);
+    pinMode(limitSwitchDPin, INPUT);
+    Serial.begin(9600);
+}
+
+void loop() {
+    Serial.print(digitalRead(limitSwitchAPin));
+    Serial.print(" - ");
+    Serial.print(digitalRead(limitSwitchBPin));
+    Serial.print(" - ");
+    Serial.print(digitalRead(limitSwitchCPin));
+    Serial.print(" - ");
+    Serial.println(digitalRead(limitSwitchDPin));
+    delay(10);
+}
