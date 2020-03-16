@@ -1,6 +1,26 @@
 # eurobot2020-main
 
-## python lib requirements
+## installation
+
+- Install node >= 10 with [this bash script](https://github.com/retrobox/console-modules/blob/master/v3.06/installnode.sh)
+    - `wget https://github.com/retrobox/console-modules/blob/master/v3.06/installnode.sh && ./installnode.sh && rm installnode.sh`
+- Install `arduino-cli`:
+    - Go to [release page of arduino-cli repository on GitHub](https://github.com/arduino/arduino-cli/releases)
+    - Choose binary file & wget this binary file
+    - Extract binary from archive
+    - Copy the binary to a dir contained in path (`/usr/bin` for example)
+    - For example with raspberry pi on armv7:
+        - `cd ~`
+        - `wget -O arduino-cli.tar.gz https://github.com/arduino/arduino-cli/releases/download/0.9.0/arduino-cli_0.9.0_Linux_ARMv7.tar.gz`
+        - `tar -xf arduino-cli.tar.gz`
+        - `mv arduino-cli /usr/bin`
+        - `rm arduino-cli.tar.gz`
+- Install AccelStepper lib `arduino-cli lib install AccelStepper`
+- Install LiquidCrystal_PCF8574 lib `arduino-cli lib install LiquidCrystal_PCF8574`
+- Install lib udev `sudo apt install -y libudev-dev`
+- Install lib usb `sudo apt install libusb-1.0`
+- Follow [installation guide](https://serialport.io/docs/guide-installation#raspberry-pi-linux) for serialport node.js lib 
+
 
 ### dualshock via node
 
