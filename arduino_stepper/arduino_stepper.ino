@@ -132,6 +132,8 @@ void loop() {
 
       } else if (commandName == "PING") {
         Serial.println("L: Pong!");
+      } else if (commandName == "ID") {
+        Serial.println("ID:STEPPER");
       } else if (commandName == "ACCL") {
         leftElevator.setAcceleration(commandParam1);
       } else if (commandName == "DRAWER_GO_TO_BACK") {

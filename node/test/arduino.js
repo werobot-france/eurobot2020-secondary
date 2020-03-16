@@ -1,6 +1,12 @@
 
 arduinoManager =  new (require('../src/ArduinoManager'))()
 
-arduinoManager.init()
+let main = async () => {
 
-console.log(arduinoManager.getEncoderArduino())
+    await arduinoManager.bindArduino()
+    
+    //console.log(arduinoManager.getStepperArduino())
+}
+
+
+main()

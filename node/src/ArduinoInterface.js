@@ -2,9 +2,10 @@ const SerialPort = require('serialport')
 
 module.exports = class ArduinoInterface {
 
-    constructor(path, label, baudRate = 9600) {
+    constructor(path, label = null, baudRate = 9600) {
         this.path = path
         this.label = label
+
         this.port = new SerialPort(this.path, {baudRate})
 
         this.port.on('error', (err) => {
@@ -12,36 +13,67 @@ module.exports = class ArduinoInterface {
         })
     }
 
-    init() {
-        console.log('> ARDUINO: Wait for arduino serial connexion...')
-        return new Promise((resolve) => {
-            // this.sendCommand('PING').then(() => {
-            //     console.log('INIT DONE!')
-            // })
-            setTimeout(() => {
-                resolve()
-            }, 1000)
+    setLabel(label) {
+        this.label = label
+    }
+
+    getLabel() {
+        return this.label
+    }
+
+    getPath() {
+        return this.path
+    }
+
+    wait(time) { return new Promise(resolve => setTimeout(resolve, time * 1000)) }
+
+    async init() {
+        //await this.sendCommand("PING", [], false)
+        
+        await this.wait(1.5)
+
+        let response = await this.sendCommand("ID")
+        
+        if (response.substr(0, 3) !== 'ID:') {
+            console.log(`ERR: Arduino Interface (${this.path} - ${this.label}) failed to initialize`)
+            console.log("EST-CE QUE TU CROIT QUE C'EST DU RESPECT ça MON GARçON ?")
+            return;
+        }
+
+        let toIdentify = ['ENCODER', 'STEPPER']
+        toIdentify.forEach(label => {
+            if (response.substr(3) === label) {
+                this.setLabel(label)
+            }
         })
     }
 
-    sendCommand(name, params = []) {
+    sendCommand(name, params = [], expectResponse = true) {
         return new Promise((resolve) => {
             let toSend = name
             params.forEach(element => {
                 toSend += "#" + element
             });
             //console.log(toSend)
+            console.log(' --> ' + toSend)
             
             toSend += "\n"
 
             this.port.removeAllListeners('data')
-            this.port.on('data', (data) => {
-                //console.log(data.toString())
-                resolve()
-            })
+            if (expectResponse) {
+                this.port.on('data', (data) => {
+                    data = data.toString().replace('\n', '')
+                    data = data.substr(0, data.length - 1)
+                    console.log(' --< ' + data)
+                    resolve(data)
+                })
+            }
             this.port.write(toSend, (err) => {
                 if (err) {
                     return console.log(`ARDUINO: Write error on port (${this.path} - ${this.label}):`, err.message)
+                }
+                if (!expectResponse) {
+                    resolve()
                 }
                 //console.log('message written')
             })
