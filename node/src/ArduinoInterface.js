@@ -79,4 +79,13 @@ module.exports = class ArduinoInterface {
             })
         })
     }
+
+    listenAll() {
+        this.port.removeAllListeners('data')
+        this.port.on('data', (data) => {
+            data = data.toString().replace('\n', '')
+            data = data.substr(0, data.length - 1)
+            console.log(' --< ' + data)
+        })
+    }
 }

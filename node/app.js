@@ -498,6 +498,9 @@ dualshock.on('sharePressed', async () => {
 let main = async () => {
     await arduinoManager.bindArduino()
 
+    arduinoManager.getEncoderArduino().sendCommand('ENCODER_ENABLE')
+    arduinoManager.getEncoderArduino().listenAll()
+
     await pwmInterface.init()
 
     // // close squeezer
@@ -507,6 +510,8 @@ let main = async () => {
     // pwmInterface.setAngle(11, 180)
     
     await navigation.stop()
+
+
 
 
     //arduinoInterface.sendCommand('ACCL#100000');
