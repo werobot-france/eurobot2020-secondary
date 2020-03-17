@@ -4,7 +4,11 @@
  */
 let dualshock = new (require('./src/Dualshock'))()
 let pwmInterface = new (require('./src/PWMInterface'))()
-let arduinoInterface = new (require('./src/ArduinoInterface'))("/dev/ttyUSB_NANO")
+//let arduinoInterface = new (require('./src/ArduinoInterface'))("/dev/ttyUSB_NANO")
+
+let arduinoManager = new (require('./src/ArduinoManager'))()
+
+let arduinoInterface = arduinoManager.getStepperArduino()
 
 /**
  * High hardware layer
@@ -492,6 +496,8 @@ dualshock.on('sharePressed', async () => {
 
 
 let main = async () => {
+    await arduinoManager.bindArduino()
+
     await pwmInterface.init()
 
     // // close squeezer
@@ -502,7 +508,6 @@ let main = async () => {
     
     await navigation.stop()
 
-    await arduinoInterface.init()
 
     //arduinoInterface.sendCommand('ACCL#100000');
 
