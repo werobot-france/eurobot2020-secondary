@@ -27,24 +27,28 @@ module.exports = class ArduinoInterface {
 
     wait(time) { return new Promise(resolve => setTimeout(resolve, time * 1000)) }
 
-    async init() {
-        //await this.sendCommand("PING", [], false)
-        
-        await this.wait(1.5)
+    init() {
+        return new Promise(async (resolve) => {
+            //await this.sendCommand("PING", [], false)
+            
+            await this.wait(1.5)
 
-        let response = await this.sendCommand("ID")
-        
-        if (response.substr(0, 3) !== 'ID:') {
-            console.log(`ERR: Arduino Interface (${this.path} - ${this.label}) failed to initialize`)
-            console.log("EST-CE QUE TU CROIT QUE C'EST DU RESPECT ça MON GARçON ?")
-            return;
-        }
-
-        let toIdentify = ['ENCODER', 'STEPPER']
-        toIdentify.forEach(label => {
-            if (response.substr(3) === label) {
-                this.setLabel(label)
+            let response = await this.sendCommand("ID")
+            
+            if (response.substr(0, 3) !== 'ID:') {
+                console.log(`ERR: Arduino Interface (${this.path} - ${this.label}) failed to initialize`)
+                console.log("EST-CE QUE TU CROIT QUE C'EST DU RESPECT ça MON GARçON ?")
+                return;
             }
+
+            let toIdentify = ['ENCODER', 'STEPPER']
+            toIdentify.forEach(label => {
+                if (response.substr(3) === label) {
+                    this.setLabel(label)
+                }
+            })
+
+            resolve()
         })
     }
 

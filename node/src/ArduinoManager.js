@@ -15,12 +15,17 @@ module.exports = class ArduinoManager {
     bindArduino() {
         return new Promise(async (resolve) => {
             let dir = fs.readdirSync('/dev').filter(dir => dir.indexOf('ttyUSB') > -1)
+            let promises = []
             for (var i = 0; i < dir.length; i++) {
                 let arduino = new ArduinoInterface('/dev/' + dir[i])
-                await arduino.init()
-                console.log(`> ARDUINO: detected ${arduino.getLabel()} on port ${arduino.getPath()}`)
                 this.instances.push(arduino)
+                promises.push(arduino.init())
             }
+
+            await Promise.all(promises)
+            
+            this.instances.forEach(instance => console.log(`> ARDUINO: detected ${instance.getLabel()} on port ${instance.getPath()}`))
+
             resolve()
         })
     }
