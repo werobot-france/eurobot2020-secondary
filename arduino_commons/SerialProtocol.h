@@ -15,4 +15,5 @@ class SerialProtocol
         String commandParam4 = "";
         SerialProtocol();
         void loop();
+        void reset();
 };

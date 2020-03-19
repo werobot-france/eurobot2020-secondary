@@ -38,12 +38,16 @@ void SerialProtocol::loop()
                 }
             }
         }
-
-        this->commandParam1 = 0;
-        this->commandParam2 = 0;
-        this->commandParam3 = 0;
-        this->commandParam4 = "";
     } else {
         this->hasCommand = false;
     }
+}
+
+void SerialProtocol::reset()
+{
+    this->commandName = "";
+    this->commandParam1 = 0;
+    this->commandParam2 = 0;
+    this->commandParam3 = 0;
+    this->commandParam4 = "";
 }
