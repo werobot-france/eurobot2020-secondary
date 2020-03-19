@@ -35,6 +35,7 @@ let rightElevator = new (require('./src/Elevator'))({
 })
 let screenInterface = new (require('./src/ScreenInterface'))({arduinoInterface})
 let flags = new (require('./src/Flag'))({pwmInterface, servoSlot: 4})
+let encoder = new (require('./src/Encoder'))(arduinoManager)
 
 /**
  * Routines
@@ -499,8 +500,10 @@ dualshock.on('sharePressed', async () => {
 let main = async () => {
     await arduinoManager.bindArduino()
 
-    arduinoManager.getEncoderArduino().sendCommand('ENCODER_ENABLE')
-    arduinoManager.getEncoderArduino().listenAll()
+    console.log(arduinoManager.getEncoderArduino().sendCommand)
+
+    await encoder.waitUntil(-10)
+    
 
     await pwmInterface.init()
 
