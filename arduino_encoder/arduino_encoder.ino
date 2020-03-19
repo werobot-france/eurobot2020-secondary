@@ -75,7 +75,7 @@ void loop()
             }
             // Serial.print("Pos: ");
             // Serial.println(encoder0Pos);
-            if (encoder0Pos >= encoderUntil) {
+            if ((encoderUntil > 0 && encoder0Pos >= encoderUntil) || (encoderUntil < 0 && encoder0Pos <= encoderUntil)) {
                 encoderEnabled = false;
                 Serial.print("Done ");
                 Serial.print(encoder0Pos);
