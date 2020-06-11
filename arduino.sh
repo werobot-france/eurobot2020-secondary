@@ -11,15 +11,29 @@ port="unknown"
 
 read n
 case $n in
-  1) echo "Choose stepper arduino..."; arduino="arduino_stepper"; port="/dev/ttyUSB_NANO_STEPPER";;
-  2) echo "Choose encoder arduino..."; arduino="arduino_encoder"; port="/dev/ttyUSB_NANO_ENCODER";;
+  1) echo "Choose stepper arduino..."; arduino="arduino_stepper";; # port="/dev/ttyUSB_NANO_STEPPER";
+  2) echo "Choose encoder arduino..."; arduino="arduino_encoder";; # port="/dev/ttyUSB_NANO_ENCODER";
   *) echo "invalid option";;
 esac
 
-echo "Use arduino: $arduino with path: $port "
+# take whatever port we have
+port=$(ls /dev | grep 'ttyUSB')
+port="/dev/$port"
 
-arduino-cli compile --fqbn arduino:avr:nano:cpu=atmega168 ./$arduino
+fqbn="arduino:avr:nano:cpu=atmega328old"
+
+echo "Use arduino: $arduino with path: $port "
+echo "FQBN: $fqbn"
+
+# copy all file of arduino_commons into the folder
+
+cp ./arduino_commons/* ./$arduino
+
+arduino-cli compile --fqbn $fqbn ./$arduino
 echo "> Compiled"
-arduino-cli upload --fqbn arduino:avr:nano:cpu=atmega168 -p /dev/ttyUSB0 ./$arduino
+arduino-cli upload --fqbn $fqbn -p /dev/ttyUSB0 ./$arduino
 echo "> Uploaded"
+
+rm ./$arduino/SerialProtocol.h
+rm ./$arduino/SerialProtocol.cpp
 

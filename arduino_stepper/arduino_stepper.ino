@@ -1,9 +1,7 @@
-#include <Arduino.h>
 #include <Wire.h>
-#include <SoftwareSerial.h>
 #include <AccelStepper.h>
 #include <LiquidCrystal_PCF8574.h>
-#include "SerialProtocol.h"
+#include "./SerialProtocol.h"
 #include "./CustomStepper.h"
 
 /**
@@ -27,10 +25,10 @@
 #define enableLeftElevator 7
 
 /* Limit switches */
-#define lsBackDrawer 14 // BACK DRAWER
-#define lsFrontDrawer 15 // FRONT DRAWER
-#define lsLeftElevator 8 // LEFT ELEVATOR
-#define lsRightElevator 9 // RIGHT ELEVATOR
+#define lsBackDrawer 14 // BACK DRAWER       A0
+#define lsFrontDrawer 15 // FRONT DRAWER     A1
+#define lsLeftElevator 8 // LEFT ELEVATOR    D8
+#define lsRightElevator 9 // RIGHT ELEVATOR  D9
 
 #define button 16
 #define led 13
@@ -39,9 +37,9 @@ CustomStepper leftElevator(dirLeftElevator, stepLeftElevator, enableLeftElevator
 CustomStepper rightElevator(dirRightElevator, stepRightElevator, enableRightElevator, lsRightElevator, -1);
 CustomStepper drawer(dirDrawer, stepDrawer, enableDrawer, lsBackDrawer, lsFrontDrawer);
 
-LiquidCrystal_PCF8574 lcd(0x27);
+//LiquidCrystal_PCF8574 lcd(0x27);
 
-int lcdError;
+//int lcdError;
 
 SerialProtocol protocol;
 
@@ -64,11 +62,11 @@ void setup() {
   rightElevator.init();
   drawer.init();
 
-  Wire.begin();
-  Wire.beginTransmission(0x27);
-  lcdError = Wire.endTransmission();
+  // Wire.begin();
+  // Wire.beginTransmission(0x27);
+  // lcdError = Wire.endTransmission();
 
-  lcd.begin(16, 2);
+  //lcd.begin(16, 2);
 
   //Serial.println("SETUP: Ready");
 }
@@ -158,22 +156,22 @@ void loop() {
         Serial.print(protocol.commandParam3);
         Serial.print("  ");
         Serial.println(protocol.commandParam4);
-      } else if (protocol.commandName == "LCD_BACKLIGHT") {
-        lcd.setBacklight(protocol.commandParam1);
-      } else if (protocol.commandName == "LCD_CLEAR") {
-        lcd.clear();
-      } else if (protocol.commandName == "LCD_FIRST") {
-        lcd.home();
-        lcd.print(protocol.commandParam4);
-      } else if (protocol.commandName == "LCD_SECOND") {
-        lcd.setCursor(0, 1);
-        lcd.print(protocol.commandParam4);
-      } else if (protocol.commandName == "LCD_EXIST") {
-        if (lcdError == 0) {
-            Serial.println("LCD_EXIST: FOUND");
-        } else {
-            Serial.println("LCD_EXIST: NOT_FOUND");
-        }
+      // } else if (protocol.commandName == "LCD_BACKLIGHT") {
+      //   lcd.setBacklight(protocol.commandParam1);
+      // } else if (protocol.commandName == "LCD_CLEAR") {
+      //   lcd.clear();
+      // } else if (protocol.commandName == "LCD_FIRST") {
+      //   lcd.home();
+      //   lcd.print(protocol.commandParam4);
+      // } else if (protocol.commandName == "LCD_SECOND") {
+      //   lcd.setCursor(0, 1);
+      //   lcd.print(protocol.commandParam4);
+      // } else if (protocol.commandName == "LCD_EXIST") {
+      //   if (lcdError == 0) {
+      //       Serial.println("LCD_EXIST: FOUND");
+      //   } else {
+      //       Serial.println("LCD_EXIST: NOT_FOUND");
+      //   }
       } else {
         Serial.println("E: invalid protocol.commandName");
       }

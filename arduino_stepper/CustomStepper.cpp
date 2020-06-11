@@ -49,6 +49,7 @@ void CustomStepper::loop()
         if (this->stepper.currentPosition() == this->targetPosition) {
             Serial.println("CUSTOM_STEPPER: Go to done");
             this->targetPosition = 0;
+            this->moveTask = false;
         }
     } else {
         this->stepper.runSpeed();
