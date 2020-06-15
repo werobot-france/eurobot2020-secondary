@@ -9,7 +9,7 @@
     "i2c-bus": "^5.1.0",
     "node-gyp": "^6.1.0",
     "pca9685": "^4.0.3",
-    "serialport": "^8.0.7"
+    "serialport": "^8.0.8"
   },
   "devDependencies": {},
   "scripts": {

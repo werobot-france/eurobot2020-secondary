@@ -1,92 +1,92 @@
 module.exports = class Navigation {
 
-    constructor(pwmInterface) {
-        this.escSlots = {
-            frontLeft: 15,
-            frontRight: 12,
-            backLeft: 14,
-            backRight: 13
-        }
-        this.pwmInterface = pwmInterface
+  constructor(pwmInterface) {
+    this.escSlots = {
+      frontLeft: 15,
+      frontRight: 12,
+      backLeft: 14,
+      backRight: 13
     }
-    
-    setSpeed(values) {
-        Object.keys(values).forEach(i => {
-            this.pwmInterface.setEsc(this.escSlots[i], values[i])
-        })
-    }
+    this.pwmInterface = pwmInterface
+  }
 
-    eastTranslation(speed) {
-        this.setSpeed({
-            frontLeft: speed,
-            frontRight: speed,
-            backLeft: speed,
-            backRight: speed
-        })
-    }
+  setSpeed(values) {
+    Object.keys(values).forEach(i => {
+      this.pwmInterface.setEsc(this.escSlots[i], values[i])
+    })
+  }
 
-    southTranslation(speed) {
-        this.northTranslation(-speed)
-    }
+  eastTranslation(speed) {
+    this.setSpeed({
+      frontLeft: speed,
+      frontRight: speed,
+      backLeft: speed,
+      backRight: speed
+    })
+  }
 
-    northTranslation(speed) {
-        this.setSpeed({
-            frontLeft: speed,
-            frontRight: -speed,
-            backLeft: -speed,
-            backRight: speed
-        })
-    }
+  southTranslation(speed) {
+    this.northTranslation(-speed)
+  }
 
-    westTranslation(speed) {
-        this.eastTranslation(-speed)
-    }
+  northTranslation(speed) {
+    this.setSpeed({
+      frontLeft: speed,
+      frontRight: -speed,
+      backLeft: -speed,
+      backRight: speed
+    })
+  }
 
-    clockwiseRotation(speed) {
-        this.setSpeed({
-            frontLeft: speed,
-            frontRight: speed,
-            backLeft: -speed,
-            backRight: -speed
-        })
-    }
-    
-    antiClockwiseRotation(speed) {
-        this.clockwiseRotation(-speed)
-    }
+  westTranslation(speed) {
+    this.eastTranslation(-speed)
+  }
 
-    northEastTranslation(speed) {
-        this.setSpeed({
-            'frontLeft': speed,
-            'frontRight': 0,
-            'backLeft': 0,
-            'backRight': speed
-        })
-    }
+  clockwiseRotation(speed) {
+    this.setSpeed({
+      frontLeft: speed,
+      frontRight: speed,
+      backLeft: -speed,
+      backRight: -speed
+    })
+  }
 
-    southWestTranslation(speed) {
-        this.northEastTranslation(-speed)
-    }
+  antiClockwiseRotation(speed) {
+    this.clockwiseRotation(-speed)
+  }
 
-    northWestTranslation(speed) {
-        this.setSpeed({
-            'frontLeft': 0,
-            'frontRight': speed,
-            'backLeft': speed,
-            'backRight': 0
-        })
-    }
+  northEastTranslation(speed) {
+    this.setSpeed({
+      'frontLeft': speed,
+      'frontRight': 0,
+      'backLeft': 0,
+      'backRight': speed
+    })
+  }
 
-    southEastTranslation(speed) {
-        this.northWestTranslation(-speed)
-    }
+  southWestTranslation(speed) {
+    this.northEastTranslation(-speed)
+  }
 
-    stop() {
-        this.setSpeed({
-            'frontLeft': 0,
-            'frontRight': 0,
-            'backLeft': 0,
-            'backRight': 0
-        })
-    }
+  northWestTranslation(speed) {
+    this.setSpeed({
+      'frontLeft': 0,
+      'frontRight': speed,
+      'backLeft': speed,
+      'backRight': 0
+    })
+  }
+
+  southEastTranslation(speed) {
+    this.northWestTranslation(-speed)
+  }
+
+  stop() {
+    this.setSpeed({
+      'frontLeft': 0,
+      'frontRight': 0,
+      'backLeft': 0,
+      'backRight': 0
+    })
+  }
 }

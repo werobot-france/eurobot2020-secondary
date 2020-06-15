@@ -500,7 +500,7 @@ dualshock.on('sharePressed', async () => {
 let main = async () => {
     await arduinoManager.bindArduino()
 
-    console.log(arduinoManager.getEncoderArduino().sendCommand)
+    console.log(arduinoManager.getInstanceInventory())
 
     await encoder.waitUntil(-10)
     
