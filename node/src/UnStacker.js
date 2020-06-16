@@ -1,10 +1,10 @@
 module.exports = class UnStacker {
 
-  constructor(params) {
-    this.navigation = params.navigation
-    this.leftElevator = params.leftElevator
-    this.rightElevator = params.rightElevator
-    this.drawer = params.drawer
+  constructor(container) {
+    this.navigation = container.get('navigation')
+    this.leftElevator = container.get('leftElevator')
+    this.rightElevator = container.get('rightElevator')
+    this.drawer = container.get('drawer')
   }
 
   wait(timeout) {

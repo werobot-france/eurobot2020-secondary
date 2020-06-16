@@ -1,18 +1,39 @@
-module.exports = class ControlledNavigation {
+module.exports = class ControlHandler {
 
-  constructor(navigation) {
-    this.navigation = navigation
+  constructor(container) {
+    this.navigation = container.get('navigation')
+    this.dualshock = container.get('dualshock')
+    this.leftElevator = container.get('leftElevator')
+    this.rightElevator = container.get('rightElevator')
+    this.drawer = container.get('drawer')
+    this.pwmInterface = container.get('pwmInterface')
+  }
+
+  wait(timeout) {
+    return new Promise(resolve => {
+      setTimeout(resolve, timeout)
+    })
+  }
+
+  confirm() {
+    return new Promise(resolve => {
+      process.stdin.setEncoding('utf-8')
+      console.log("Confirm ?")
+      process.stdin.on('data', () => {
+        resolve()
+      })
+    })
+  }
+
+  mappyt(x, inMin, inMax, outMin, outMax) {
+    return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
   }
 
   init() {
-    dualshock.on('crossPressed', () => {
+    this.dualshock.on('crossPressed', () => {
       console.log('cross pressed!')
     })
-  
-    let mappyt = (x, inMin, inMax, outMin, outMax) => {
-      return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
-    }
-  
+    
     let minSpeed = 0
     let maxSpeed = 40
   
@@ -29,115 +50,121 @@ module.exports = class ControlledNavigation {
     let rightSpeed = 0
     let rightOldSpeed = 0
   
-    dualshock.on('l2Pressed', () => {
+    this.dualshock.on('l2Pressed', () => {
       console.log('l2 pressed!')
       isL2Triggered = true
     })
   
-    dualshock.on('l2Released', () => {
+    this.dualshock.on('l2Released', () => {
       console.log('l2 released!')
       isL2Triggered = false
   
-      leftElevator.setSpeed(0)
+      this.leftElevator.setSpeed(0)
       leftOldSpeed = 0
       leftSpeed = 0
     })
   
-    dualshock.on('l1Pressed', () => {
-      leftElevator.toggleClaw()
+    this.dualshock.on('l1Pressed', () => {
+      this.leftElevator.toggleClaw()
     })
   
     /// RIGHT ELEVATOR
-    dualshock.on('r2Pressed', () => {
+    this.dualshock.on('r2Pressed', () => {
       console.log('r2 pressed!')
       isR2Triggered = true
     })
   
-    dualshock.on('r2Released', () => {
+    this.dualshock.on('r2Released', () => {
       console.log('r2 released!')
       isR2Triggered = false
   
-      rightElevator.setSpeed(0)
+      this.rightElevator.setSpeed(0)
       rightOldSpeed = 0
       rightSpeed = 0
     })
   
-    dualshock.on('r1Pressed', () => {
-      rightElevator.toggleClaw()
+    this.dualshock.on('r1Pressed', () => {
+      this.rightElevator.toggleClaw()
     })
   
-    // dualshock.on('upPressed', () => {
+    // this.dualshock.on('upPressed', () => {
     //     arduino.sendCommand('ELEVATOR_GO_TO', [0, -800, -125])
     // })
   
-    dualshock.on('squarePressed', () => {
+    this.dualshock.on('squarePressed', () => {
       //arduino.sendCommand('ELEVATOR_GO_TO', [0, -70, -125]) // PRESET TO CATCH BUOS
   
       console.log('RIGHT: Go to origin!')
-      rightElevator.goToOrigin()
+      this.rightElevator.goToOrigin()
     })
   
-    // dualshock.on('l1Pressed', () => {
+    // this.dualshock.on('l1Pressed', () => {
     //     arduino.sendCommand('ELEVATOR_GO_TO', [0, -650, -115])
     // })
   
-    dualshock.on('trianglePressed', () => {
-      drawer.toggle()
+    this.dualshock.on('trianglePressed', () => {
+      this.drawer.toggle()
     })
   
     let combineSqueezer = false
   
-    dualshock.on('optionsPressed', () => {
+    this.dualshock.on('optionsPressed', () => {
       combineSqueezer = true
     })
   
-    // dualshock.on('optionsReleased', () => {
+    // this.dualshock.on('optionsReleased', () => {
     //     combineSqueezer = false
     // })
   
-    dualshock.on('circlePressed', () => {
+    this.dualshock.on('circlePressed', () => {
       if (!combineSqueezer) {
-        drawer.toggleSqueezer()
+        this.drawer.toggleSqueezer()
       }
     })
   
-    dualshock.on('circleReleased', () => {
+    this.dualshock.on('circleReleased', () => {
       if (combineSqueezer) {
-        drawer.completlySqueeze()
+        this.drawer.completlySqueeze()
         combineSqueezer = false
       }
     })
   
-    dualshock.on('crossPressed', () => {
+    this.dualshock.on('crossPressed', () => {
       console.log('Go to origin!')
-      leftElevator.goToOrigin()
+      this.leftElevator.goToOrigin()
     })
   
-    dualshock.on('psPressed', () => {
+    this.dualshock.on('psPressed', () => {
       console.log('EMERGENCY STOP!')
-      arduinoInterface.sendCommand('STOP')
-      pwmInterface.stop()
+      this.stepperInterface.sendCommand('STOP')
+      this.pwmInterface.stop()
     })
   
-    dualshock.on('leftPressed', () => {
+    this.dualshock.on('leftPressed', () => {
       console.log('Toggle direction on left')
-      leftElevator.toggleDirection()
-      if ((leftElevator.getDirection() == 'END' && leftSpeed > 0) || (leftElevator.getDirection() == 'ORIGIN' && leftSpeed < 0)) {
+      this.leftElevator.toggleDirection()
+      if (
+        (this.leftElevator.getDirection() == 'END' && leftSpeed > 0) ||
+        (this.leftElevator.getDirection() == 'ORIGIN' && leftSpeed < 0)
+      ) {
         leftSpeed = -leftSpeed
       }
-      leftElevator.setSpeed(leftSpeed)
+      this.leftElevator.setSpeed(leftSpeed)
     })
   
-    dualshock.on('rightPressed', () => {
+    this.dualshock.on('rightPressed', () => {
       console.log('Toggle direction on right')
-      rightElevator.toggleDirection()
-      if ((rightElevator.getDirection() == 'END' && rightSpeed > 0) || (rightElevator.getDirection() == 'ORIGIN' && rightSpeed < 0)) {
+      this.rightElevator.toggleDirection()
+      if (
+        (this.rightElevator.getDirection() == 'END' && rightSpeed > 0) ||
+        (this.rightElevator.getDirection() == 'ORIGIN' && rightSpeed < 0)
+      ) {
         rightSpeed = -rightSpeed
       }
-      rightElevator.setSpeed(rightSpeed)
+      this.rightElevator.setSpeed(rightSpeed)
     })
   
-    dualshock.on('analog', values => {
+    this.dualshock.on('analog', values => {
       //console.log('analog', values)
       let lStickX = values.lStickX
       let lStickY = -values.lStickY
@@ -164,7 +191,7 @@ module.exports = class ControlledNavigation {
       */
       if (rightRadius <= radiusThreshold && leftRadius <= radiusThreshold) {
         //console.log('STOP ALL')
-        navigation.stop()
+        this.navigation.stop()
       } else {
         // if (isL2Triggered) {
         //     //currentSpeed = mappyt(l2, -1, 1, 0, 1) * 100
@@ -192,35 +219,35 @@ module.exports = class ControlledNavigation {
   
           if (rStickY < 0.5 * rStickX && rStickY >= -0.5 * rStickX) {
             //console.log('east translation')
-            navigation.eastTranslation(currentSpeed)
+            this.navigation.eastTranslation(currentSpeed)
           }
           if (rStickY > 0.5 * rStickX && rStickY <= 2 * rStickX) {
             //console.log('north east translation')
-            navigation.northEastTranslation(currentSpeed)
+            this.navigation.northEastTranslation(currentSpeed)
           }
           if (rStickY > 2 * rStickX && rStickY >= -2 * rStickX) {
             //console.log('north translation')
-            navigation.northTranslation(currentSpeed)
+            this.navigation.northTranslation(currentSpeed)
           }
           if (rStickY < -2 * rStickX && rStickY >= -0.5 * rStickX) {
             //console.log('south east translation')
-            navigation.southEastTranslation(currentSpeed)
+            this.navigation.southEastTranslation(currentSpeed)
           }
           if (rStickY < -0.5 * rStickX && rStickY >= 0.5 * rStickX) {
             //console.log('west translation')
-            navigation.westTranslation(currentSpeed)
+            this.navigation.westTranslation(currentSpeed)
           }
           if (rStickY < 0.5 * rStickX && rStickY >= 2 * rStickX) {
             //console.log('south west translation')
-            navigation.southWestTranslation(currentSpeed)
+            this.navigation.southWestTranslation(currentSpeed)
           }
           if (rStickY < 2 * rStickX && rStickY <= -2 * rStickX) {
             //console.log('south translation')
-            navigation.southTranslation(currentSpeed)
+            this.navigation.southTranslation(currentSpeed)
           }
           if (rStickY > -2 * rStickX && rStickY <= -0.5 * rStickX) {
             //console.log('north west translation')
-            navigation.northWestTranslation(currentSpeed)
+            this.navigation.northWestTranslation(currentSpeed)
           }
         }
   
@@ -229,7 +256,7 @@ module.exports = class ControlledNavigation {
           currentSpeed = mappyt(leftRadius, 0, 1, minSpeed, maxSpeed)
   
           //console.log('clockwise')
-          navigation.clockwiseRotation(currentSpeed)
+          this.navigation.clockwiseRotation(currentSpeed)
         }
   
         if (lStickY < -0.5 * lStickX && lStickY >= 0.5 * lStickX) {
@@ -237,7 +264,7 @@ module.exports = class ControlledNavigation {
           currentSpeed = mappyt(leftRadius, 0, 1, minSpeed, maxSpeed)
   
           //console.log('anticlockwise')
-          navigation.antiClockwiseRotation(currentSpeed)
+          this.navigation.antiClockwiseRotation(currentSpeed)
         }
       }
   
@@ -260,7 +287,7 @@ module.exports = class ControlledNavigation {
   
         if (leftSpeed != leftOldSpeed) {
           //console.log(leftSpeed)
-          leftElevator.setSpeed(leftSpeed)
+          this.leftElevator.setSpeed(leftSpeed)
           leftOldSpeed = leftSpeed
         }
       }
@@ -284,40 +311,40 @@ module.exports = class ControlledNavigation {
   
         if (rightSpeed != rightOldSpeed) {
           //  console.log(rightSpeed)
-          rightElevator.setSpeed(rightSpeed)
+          this.rightElevator.setSpeed(rightSpeed)
           rightOldSpeed = rightSpeed
         }
       }
     })
   
-    dualshock.on('upPressed', () => {
+    this.dualshock.on('upPressed', () => {
       arduinoInterface.sendCommand('ELEVATOR_GO_TO#0#-860#800');
     })
-    dualshock.on('downPressed', () => {
+    this.dualshock.on('downPressed', () => {
       arduinoInterface.sendCommand('ELEVATOR_GO_TO#0#-383#800');
     })
   
-    // dualshock.on('l3Pressed', () => {
-    //     leftElevator.closeClawGround()
+    // this.dualshock.on('l3Pressed', () => {
+    //     this.leftElevator.closeClawGround()
     // })
-    // dualshock.on('r3Pressed', () => {
-    //     rightElevator.closeClawGround()
+    // this.dualshock.on('r3Pressed', () => {
+    //     this.rightElevator.closeClawGround()
     // })
-    dualshock.on('padPressed', () => {
+    this.dualshock.on('padPressed', () => {
       stacker.stackRoutine(['G', 'G', 'R', 'R', 'R'])
       //unStacker.unStackRoutine()
     })
   
-    dualshock.on('sharePressed', async () => {
+    this.dualshock.on('sharePressed', async () => {
       //arduinoInterface.sendCommand('GET_CURRENT_POSITION');
-      await leftElevator.goToTop()
+      await this.leftElevator.goToTop()
       console.log('go to top DONE')
   
       return
       // manual initialization
-      // leftElevator.closeClaw()
+      // this.leftElevator.closeClaw()
   
-      // leftElevator.goToOrigin()
+      // this.leftElevator.goToOrigin()
       // console.log('MANUAL INITIALIZATION DONE')
   
       // return
@@ -326,9 +353,9 @@ module.exports = class ControlledNavigation {
       routine prendr Verre
       elevator.goToMiddle()
       elevator.openClaw()
-      navigation.eastTranslation()
+      this.navigation.eastTranslation()
       elevator.goToOrigin()
-      navigation.westTranslation()
+      this.navigation.westTranslation()
       elevator.closeClaw()
       elevator.goToTop()
       */
@@ -337,100 +364,100 @@ module.exports = class ControlledNavigation {
       situation n°3 Yellow team
       GGRRR
   
-      leftElevator.goToTop()
+      this.leftElevator.goToTop()
       // deplacement callage vers au dessus du vers
-      navigation.westTranslation()
+      this.navigation.westTranslation()
       await
       this.takeBuos(leftElevator)
       // decallage d'une boue
-      navigation.westTranslation()
+      this.navigation.westTranslation()
       await 
       this.takeBuos(leftElevator)
       // decallage d'une boue
-      navigation.westTranslation()
+      this.navigation.westTranslation()
       await 
       this.takeBuos(leftElevator)
-      navigation.westTranslation()
+      this.navigation.westTranslation()
       // decallage de deux bouées
       await
       this.takeBuos(rightElevator)
       // decallage d'une boue
-      navigation.westTranslation()
+      this.navigation.westTranslation()
       await 
       this.takeBuos(rightElevator)
       */
   
       await wait(1000)
-      leftElevator.goToTop()
+      this.leftElevator.goToTop()
       await wait(1 * 1000)
       await confirm()
-      navigation.westTranslation(50)
+      this.navigation.westTranslation(50)
       await wait(0.82 * 1000)
-      navigation.stop()
-      leftElevator.goToMiddle()
+      this.navigation.stop()
+      this.leftElevator.goToMiddle()
       await wait(1000)
-      leftElevator.openClaw()
+      this.leftElevator.openClaw()
       await wait(700)
-      navigation.northTranslation(30)
+      this.navigation.northTranslation(30)
       await wait(400)
-      navigation.stop()
+      this.navigation.stop()
       await confirm()
-      navigation.eastTranslation(30)
+      this.navigation.eastTranslation(30)
       await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.goToOrigin()
+      this.navigation.stop()
+      this.leftElevator.goToOrigin()
       await wait(0.8 * 1000)
       await confirm()
-      navigation.westTranslation(30)
+      this.navigation.westTranslation(30)
       await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.closeClaw()
+      this.navigation.stop()
+      this.leftElevator.closeClaw()
       await wait(0.8 * 1000)
-      leftElevator.goToTop()
+      this.leftElevator.goToTop()
       await wait(0.5 * 1000)
       await confirm()
-      navigation.westTranslation(30)
+      this.navigation.westTranslation(30)
       await wait(0.40 * 1000)
-      navigation.stop()
+      this.navigation.stop()
       await confirm()
-      leftElevator.goToMiddle()
+      this.leftElevator.goToMiddle()
       await wait(0.40 * 1000)
-      leftElevator.openClaw()
+      this.leftElevator.openClaw()
       await confirm()
-      navigation.eastTranslation(30)
+      this.navigation.eastTranslation(30)
       await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.goToOrigin()
+      this.navigation.stop()
+      this.leftElevator.goToOrigin()
       await wait(0.8 * 1000)
       await confirm()
-      navigation.westTranslation(30)
+      this.navigation.westTranslation(30)
       await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.closeClaw()
+      this.navigation.stop()
+      this.leftElevator.closeClaw()
       await wait(0.8 * 1000)
-      leftElevator.goToTop()
+      this.leftElevator.goToTop()
       await wait(0.5 * 1000)
       await confirm()
-      navigation.westTranslation(30)
+      this.navigation.westTranslation(30)
       await wait(0.40 * 1000)
-      navigation.stop()
+      this.navigation.stop()
       await confirm()
-      leftElevator.goToMiddle()
+      this.leftElevator.goToMiddle()
       await wait(0.40 * 1000)
-      leftElevator.openClaw()
+      this.leftElevator.openClaw()
       await confirm()
-      navigation.eastTranslation(30)
+      this.navigation.eastTranslation(30)
       await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.goToOrigin()
+      this.navigation.stop()
+      this.leftElevator.goToOrigin()
       await wait(0.8 * 1000)
       await confirm()
-      navigation.westTranslation(30)
+      this.navigation.westTranslation(30)
       await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.closeClaw()
+      this.navigation.stop()
+      this.leftElevator.closeClaw()
       await wait(0.8 * 1000)
-      leftElevator.goToTop()
+      this.leftElevator.goToTop()
     })
   }
 }
