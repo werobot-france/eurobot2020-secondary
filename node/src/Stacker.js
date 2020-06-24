@@ -1,9 +1,9 @@
 module.exports = class Stacker {
 
-  constructor(params) {
-    this.navigation = params.navigation
-    this.leftElevator = params.leftElevator
-    this.rightElevator = params.rightElevator
+  constructor(container) {
+    this.navigation = container.get('navigation')
+    this.leftElevator = container.get('leftElevator')
+    this.rightElevator = container.get('rightElevator')
   }
 
   wait(timeout) {

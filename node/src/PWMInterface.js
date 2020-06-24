@@ -9,7 +9,7 @@ module.exports = class PwmInterface {
       address: 0x40,
       frequency: 50,
       debug: false
-    };
+    }
   }
 
   /**
@@ -19,12 +19,13 @@ module.exports = class PwmInterface {
     return new Promise((resolve, reject) => {
       this.driver = new Pca9685Driver(this.options, error => {
         if (error) {
-          console.error("PCA9685: Error initializing")
+          console.error("> ERR: PCA9685: Error initializing")
+          console.error(error)
           reject()
           process.exit(-1)
           return
         }
-        console.log("PCA9685: Initialization done")
+        console.log("> PCA9685: Initialization done")
 
         resolve()
       })
@@ -61,7 +62,7 @@ module.exports = class PwmInterface {
    * @param {Number} speed from -100 to 100
    */
   setEsc(slot, speed) {
-    this.driver.setPulseLength(slot, ((this.mappyt(speed, 0, 100, 307, 410) / 4096) * 20) * 1000);
+    this.driver.setPulseLength(slot, ((this.mappyt(speed, 0, 100, 307, 410) / 4096) * 20) * 1000)
   }
 
   /**
