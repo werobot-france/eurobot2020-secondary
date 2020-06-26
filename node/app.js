@@ -15,6 +15,24 @@ const UnStacker = require('./src/UnStacker')
 const ControlHandler = require('./src/ControlHandler')
 const Container = require('./src/Container')
 
+
+
+let wait = timeout => {
+  return new Promise(resolve => {
+    setTimeout(resolve, timeout)
+  })
+}
+
+let confirm = () => {
+  return new Promise(resolve => {
+    process.stdin.setEncoding('utf-8')
+    console.log("Confirm ?")
+    process.stdin.on('data', () => {
+      resolve()
+    })
+  })
+}
+
 /**
  * Low hardware layer
  */
@@ -22,6 +40,8 @@ let dualshock = new (require('./src/Dualshock'))()
 let pwmInterface = new (require('./src/PWMInterface'))()
 //let arduinoInterface = new (require('./src/ArduinoInterface'))("/dev/ttyUSB_NANO")
 let arduinoManager = new (require('./src/ArduinoManager'))()
+
+let navigation = new Navigation(pwmInterface)
 
 let stepperInterface = null
 let container = new Container()
@@ -45,7 +65,7 @@ const main = async () => {
   /**
    * High hardware layer
    */
-  let navigation = new Navigation(pwmInterface)
+  container.set('navigation', navigation)
   container.set('drawer', new Drawer({
     pwmInterface,
     stepperInterface
@@ -96,7 +116,7 @@ const main = async () => {
   // // close claw
   // pwmInterface.setAngle(11, 180)
 
-  await navigation.stop()
+  //await pwmInterface.stop()
 
   //arduinoInterface.sendCommand('ACCL#100000')
 
@@ -121,6 +141,10 @@ const main = async () => {
 
   console.log('> Main: Init sequence done')
 
+  await confirm()
+  navigation.setSpeedFromAngle(90, 50)
+  //navigation.northTranslation()
+  
   // TODO: Start a timer which end after 100 seconds or 1 min and 40 seconds WHEN the match start
   // DO NOT ACCEPT ANY INPUT FROM THE CONTROLLER
   // flag.startTimer()
@@ -131,13 +155,15 @@ const main = async () => {
   // }, 100 * 1000)
 }
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log("> EXIT: Caught interrupt signal")
+  navigation.stop()
   pwmInterface.stop()
   stepperInterface.sendCommand('STOP')
   setTimeout(() => {
+    console.log('STOP')
     process.exit()
-  }, 500)
+  }, 1000)
 })
 
 main()

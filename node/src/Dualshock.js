@@ -75,14 +75,14 @@ module.exports = class Dualshock extends EventEmitter {
   }
 
   setLed(red = 0, green = 0, blue = 0) {
-    this.controller.setLed(red, green, blue)
+    //this.controller.setLed(red, green, blue)
   }
 
   rumble(left, right, durL, durR, timeout) {
-    this.controller.rumble(left, right, durL, durR)
+    //this.controller.rumble(left, right, durL, durR)
     return new Promise(resolve => {
       setTimeout(() => {
-        this.controller.rumble(0, 0)
+        //this.controller.rumble(0, 0)
         resolve()
       }, timeout * 1000)
     })

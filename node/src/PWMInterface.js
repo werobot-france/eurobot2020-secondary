@@ -62,6 +62,9 @@ module.exports = class PwmInterface {
    * @param {Number} speed from -100 to 100
    */
   setEsc(slot, speed) {
+    console.log('Set esc called on port ' + slot + ', ' + speed)
+    if (speed < -100) { speed = -100 }
+    if (speed > 100) { speed = 100 }
     this.driver.setPulseLength(slot, ((this.mappyt(speed, 0, 100, 307, 410) / 4096) * 20) * 1000)
   }
 

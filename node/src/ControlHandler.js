@@ -7,6 +7,8 @@ module.exports = class ControlHandler {
     this.rightElevator = container.get('rightElevator')
     this.drawer = container.get('drawer')
     this.pwmInterface = container.get('pwmInterface')
+    this.stepperInterface = container.get('stepperInterface')
+    console.log(this.navigation)
   }
 
   wait(timeout) {
@@ -165,17 +167,18 @@ module.exports = class ControlHandler {
     })
   
     this.dualshock.on('analog', values => {
-      //console.log('analog', values)
+      console.log('analog', values)
       let lStickX = values.lStickX
       let lStickY = -values.lStickY
       let rStickX = values.rStickX
       let rStickY = -values.rStickY
-      l2 = values['l2']
-      r2 = values['r2']
+      let l2 = values['l2']
+      let r2 = values['r2']
   
       let leftRadius = parseFloat(Math.sqrt(Math.abs(lStickX) ** 2 + Math.abs(lStickY) ** 2)).toFixed(2)
       let rightRadius = parseFloat(Math.sqrt(Math.abs(rStickX) ** 2 + Math.abs(rStickY) ** 2)).toFixed(2)
   
+      let radius = 0;
       if (leftRadius > 1) {
         radius = 1
       }
@@ -190,18 +193,18 @@ module.exports = class ControlHandler {
       Math.abs(rStickY) <= seuil
       */
       if (rightRadius <= radiusThreshold && leftRadius <= radiusThreshold) {
-        //console.log('STOP ALL')
+        console.log('STOP ALL')
         this.navigation.stop()
       } else {
         // if (isL2Triggered) {
-        //     //currentSpeed = mappyt(l2, -1, 1, 0, 1) * 100
+        //     //currentSpeed = this.mappyt(l2, -1, 1, 0, 1) * 100
         //     /**
   
         //      */
         //     currentSpeed = (l2 + 1) * 50
         //     console.log(currentSpeed)
         // } else {
-        //     currentSpeed = mappyt(radius, 0, 1, minSpeed, maxSpeed)
+        //     currentSpeed = this.mappyt(radius, 0, 1, minSpeed, maxSpeed)
         // }
   
   
@@ -212,9 +215,9 @@ module.exports = class ControlHandler {
            * Linear map mappy(0.9, 1, a*1000, 1)
            */
           if (rightRadius <= 0.9) {
-            currentSpeed = mappyt(rightRadius, 0, 0.9, minSpeed, maxSpeed)
+            currentSpeed = this.mappyt(rightRadius, 0, 0.9, minSpeed, maxSpeed)
           } else {
-            currentSpeed = mappyt(rightRadius, 0.9, 1, maxSpeed, 100)
+            currentSpeed = this.mappyt(rightRadius, 0.9, 1, maxSpeed, 100)
           }
   
           if (rStickY < 0.5 * rStickX && rStickY >= -0.5 * rStickX) {
@@ -253,7 +256,7 @@ module.exports = class ControlHandler {
   
         if (lStickY < 0.5 * lStickX && lStickY >= -0.5 * lStickX) {
   
-          currentSpeed = mappyt(leftRadius, 0, 1, minSpeed, maxSpeed)
+          currentSpeed = this.mappyt(leftRadius, 0, 1, minSpeed, maxSpeed)
   
           //console.log('clockwise')
           this.navigation.clockwiseRotation(currentSpeed)
@@ -261,7 +264,7 @@ module.exports = class ControlHandler {
   
         if (lStickY < -0.5 * lStickX && lStickY >= 0.5 * lStickX) {
   
-          currentSpeed = mappyt(leftRadius, 0, 1, minSpeed, maxSpeed)
+          currentSpeed = this.mappyt(leftRadius, 0, 1, minSpeed, maxSpeed)
   
           //console.log('anticlockwise')
           this.navigation.antiClockwiseRotation(currentSpeed)
@@ -269,7 +272,7 @@ module.exports = class ControlHandler {
       }
   
       if (isL2Triggered) {
-        leftSpeed = parseInt(mappyt(l2, -1, 1, 0, 400).toFixed(0))
+        leftSpeed = parseInt(this.mappyt(l2, -1, 1, 0, 400).toFixed(0))
   
         if (leftSpeed > 0 && leftSpeed < 100) {
           leftSpeed = 100
@@ -293,7 +296,7 @@ module.exports = class ControlHandler {
       }
   
       if (isR2Triggered) {
-        rightSpeed = parseInt(mappyt(r2, -1, 1, 0, 400).toFixed(0))
+        rightSpeed = parseInt(this.mappyt(r2, -1, 1, 0, 400).toFixed(0))
   
         if (rightSpeed > 0 && rightSpeed < 100) {
           rightSpeed = 100
