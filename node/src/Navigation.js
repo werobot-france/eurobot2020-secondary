@@ -36,10 +36,10 @@ module.exports = class Navigation {
 
   northTranslation(speed) {
     this.setSpeed({
-      frontLeft: -speed,
+      frontLeft: speed,
       frontRight: -speed,
       backLeft: -speed,
-      backRight: -speed
+      backRight: speed
     })
   }
 

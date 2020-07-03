@@ -43,9 +43,9 @@ module.exports = class ControlledNavigation {
       leftSpeed = 0
     })
   
-    dualshock.on('l1Pressed', () => {
-      leftElevator.toggleClaw()
-    })
+    // dualshock.on('l1Pressed', () => {
+    //   leftElevator.toggleClaw()
+    // })
   
     /// RIGHT ELEVATOR
     dualshock.on('r2Pressed', () => {
@@ -62,80 +62,80 @@ module.exports = class ControlledNavigation {
       rightSpeed = 0
     })
   
-    dualshock.on('r1Pressed', () => {
-      rightElevator.toggleClaw()
-    })
-  
-    // dualshock.on('upPressed', () => {
-    //     arduino.sendCommand('ELEVATOR_GO_TO', [0, -800, -125])
+    // dualshock.on('r1Pressed', () => {
+    //   rightElevator.toggleClaw()
     // })
   
-    dualshock.on('squarePressed', () => {
-      //arduino.sendCommand('ELEVATOR_GO_TO', [0, -70, -125]) // PRESET TO CATCH BUOS
+    // // dualshock.on('upPressed', () => {
+    // //     arduino.sendCommand('ELEVATOR_GO_TO', [0, -800, -125])
+    // // })
   
-      console.log('RIGHT: Go to origin!')
-      rightElevator.goToOrigin()
-    })
+    // dualshock.on('squarePressed', () => {
+    //   //arduino.sendCommand('ELEVATOR_GO_TO', [0, -70, -125]) // PRESET TO CATCH BUOS
+  
+    //   console.log('RIGHT: Go to origin!')
+    //   rightElevator.goToOrigin()
+    // })
   
     // dualshock.on('l1Pressed', () => {
     //     arduino.sendCommand('ELEVATOR_GO_TO', [0, -650, -115])
     // })
   
-    dualshock.on('trianglePressed', () => {
-      drawer.toggle()
-    })
+    // dualshock.on('trianglePressed', () => {
+    //   drawer.toggle()
+    // })
   
     let combineSqueezer = false
   
-    dualshock.on('optionsPressed', () => {
-      combineSqueezer = true
-    })
+    // dualshock.on('optionsPressed', () => {
+    //   combineSqueezer = true
+    // })
   
     // dualshock.on('optionsReleased', () => {
     //     combineSqueezer = false
     // })
   
-    dualshock.on('circlePressed', () => {
-      if (!combineSqueezer) {
-        drawer.toggleSqueezer()
-      }
-    })
+    // dualshock.on('circlePressed', () => {
+    //   if (!combineSqueezer) {
+    //     drawer.toggleSqueezer()
+    //   }
+    // })
   
-    dualshock.on('circleReleased', () => {
-      if (combineSqueezer) {
-        drawer.completlySqueeze()
-        combineSqueezer = false
-      }
-    })
+    // dualshock.on('circleReleased', () => {
+    //   if (combineSqueezer) {
+    //     drawer.completlySqueeze()
+    //     combineSqueezer = false
+    //   }
+    // })
   
-    dualshock.on('crossPressed', () => {
-      console.log('Go to origin!')
-      leftElevator.goToOrigin()
-    })
+    // dualshock.on('crossPressed', () => {
+    //   console.log('Go to origin!')
+    //   leftElevator.goToOrigin()
+    // })
   
     dualshock.on('psPressed', () => {
       console.log('EMERGENCY STOP!')
-      arduinoInterface.sendCommand('STOP')
+      //arduinoInterface.sendCommand('STOP')
       pwmInterface.stop()
     })
   
-    dualshock.on('leftPressed', () => {
-      console.log('Toggle direction on left')
-      leftElevator.toggleDirection()
-      if ((leftElevator.getDirection() == 'END' && leftSpeed > 0) || (leftElevator.getDirection() == 'ORIGIN' && leftSpeed < 0)) {
-        leftSpeed = -leftSpeed
-      }
-      leftElevator.setSpeed(leftSpeed)
-    })
+    // dualshock.on('leftPressed', () => {
+    //   console.log('Toggle direction on left')
+    //   leftElevator.toggleDirection()
+    //   if ((leftElevator.getDirection() == 'END' && leftSpeed > 0) || (leftElevator.getDirection() == 'ORIGIN' && leftSpeed < 0)) {
+    //     leftSpeed = -leftSpeed
+    //   }
+    //   leftElevator.setSpeed(leftSpeed)
+    // })
   
-    dualshock.on('rightPressed', () => {
-      console.log('Toggle direction on right')
-      rightElevator.toggleDirection()
-      if ((rightElevator.getDirection() == 'END' && rightSpeed > 0) || (rightElevator.getDirection() == 'ORIGIN' && rightSpeed < 0)) {
-        rightSpeed = -rightSpeed
-      }
-      rightElevator.setSpeed(rightSpeed)
-    })
+    // dualshock.on('rightPressed', () => {
+    //   console.log('Toggle direction on right')
+    //   rightElevator.toggleDirection()
+    //   if ((rightElevator.getDirection() == 'END' && rightSpeed > 0) || (rightElevator.getDirection() == 'ORIGIN' && rightSpeed < 0)) {
+    //     rightSpeed = -rightSpeed
+    //   }
+    //   rightElevator.setSpeed(rightSpeed)
+    // })
   
     dualshock.on('analog', values => {
       //console.log('analog', values)
@@ -241,61 +241,61 @@ module.exports = class ControlledNavigation {
         }
       }
   
-      if (isL2Triggered) {
-        leftSpeed = parseInt(mappyt(l2, -1, 1, 0, 400).toFixed(0))
+      // if (isL2Triggered) {
+      //   leftSpeed = parseInt(mappyt(l2, -1, 1, 0, 400).toFixed(0))
   
-        if (leftSpeed > 0 && leftSpeed < 100) {
-          leftSpeed = 100
-        } else if (leftSpeed >= 100 && leftSpeed < 200) {
-          leftSpeed = 250
-        } else if (leftSpeed >= 200 && leftSpeed < 300) {
-          leftSpeed = 500
-        } else if (leftSpeed >= 300 && leftSpeed <= 400) {
-          leftSpeed = 750
-        }
+      //   if (leftSpeed > 0 && leftSpeed < 100) {
+      //     leftSpeed = 100
+      //   } else if (leftSpeed >= 100 && leftSpeed < 200) {
+      //     leftSpeed = 250
+      //   } else if (leftSpeed >= 200 && leftSpeed < 300) {
+      //     leftSpeed = 500
+      //   } else if (leftSpeed >= 300 && leftSpeed <= 400) {
+      //     leftSpeed = 750
+      //   }
   
-        if (leftElevator.getDirection() == 'END') {
-          leftSpeed = -leftSpeed
-        }
+      //   if (leftElevator.getDirection() == 'END') {
+      //     leftSpeed = -leftSpeed
+      //   }
   
-        if (leftSpeed != leftOldSpeed) {
-          //console.log(leftSpeed)
-          leftElevator.setSpeed(leftSpeed)
-          leftOldSpeed = leftSpeed
-        }
-      }
+      //   if (leftSpeed != leftOldSpeed) {
+      //     //console.log(leftSpeed)
+      //     leftElevator.setSpeed(leftSpeed)
+      //     leftOldSpeed = leftSpeed
+      //   }
+      // }
   
-      if (isR2Triggered) {
-        rightSpeed = parseInt(mappyt(r2, -1, 1, 0, 400).toFixed(0))
+      // if (isR2Triggered) {
+      //   rightSpeed = parseInt(mappyt(r2, -1, 1, 0, 400).toFixed(0))
   
-        if (rightSpeed > 0 && rightSpeed < 100) {
-          rightSpeed = 100
-        } else if (rightSpeed >= 100 && rightSpeed < 200) {
-          rightSpeed = 250
-        } else if (rightSpeed >= 200 && rightSpeed < 300) {
-          rightSpeed = 500
-        } else if (rightSpeed >= 300 && rightSpeed <= 400) {
-          rightSpeed = 750
-        }
+      //   if (rightSpeed > 0 && rightSpeed < 100) {
+      //     rightSpeed = 100
+      //   } else if (rightSpeed >= 100 && rightSpeed < 200) {
+      //     rightSpeed = 250
+      //   } else if (rightSpeed >= 200 && rightSpeed < 300) {
+      //     rightSpeed = 500
+      //   } else if (rightSpeed >= 300 && rightSpeed <= 400) {
+      //     rightSpeed = 750
+      //   }
   
-        if (rightElevator.getDirection() == 'END') {
-          rightSpeed = -rightSpeed
-        }
+      //   if (rightElevator.getDirection() == 'END') {
+      //     rightSpeed = -rightSpeed
+      //   }
   
-        if (rightSpeed != rightOldSpeed) {
-          //  console.log(rightSpeed)
-          rightElevator.setSpeed(rightSpeed)
-          rightOldSpeed = rightSpeed
-        }
-      }
+      //   if (rightSpeed != rightOldSpeed) {
+      //     //  console.log(rightSpeed)
+      //     rightElevator.setSpeed(rightSpeed)
+      //     rightOldSpeed = rightSpeed
+      //   }
+      // }
     })
   
-    dualshock.on('upPressed', () => {
-      arduinoInterface.sendCommand('ELEVATOR_GO_TO#0#-860#800');
-    })
-    dualshock.on('downPressed', () => {
-      arduinoInterface.sendCommand('ELEVATOR_GO_TO#0#-383#800');
-    })
+    // dualshock.on('upPressed', () => {
+    //   arduinoInterface.sendCommand('ELEVATOR_GO_TO#0#-860#800');
+    // })
+    // dualshock.on('downPressed', () => {
+    //   arduinoInterface.sendCommand('ELEVATOR_GO_TO#0#-383#800');
+    // })
   
     // dualshock.on('l3Pressed', () => {
     //     leftElevator.closeClawGround()
@@ -303,134 +303,134 @@ module.exports = class ControlledNavigation {
     // dualshock.on('r3Pressed', () => {
     //     rightElevator.closeClawGround()
     // })
-    dualshock.on('padPressed', () => {
-      stacker.stackRoutine(['G', 'G', 'R', 'R', 'R'])
-      //unStacker.unStackRoutine()
-    })
+    // dualshock.on('padPressed', () => {
+    //   stacker.stackRoutine(['G', 'G', 'R', 'R', 'R'])
+    //   //unStacker.unStackRoutine()
+    // })
   
-    dualshock.on('sharePressed', async () => {
-      //arduinoInterface.sendCommand('GET_CURRENT_POSITION');
-      await leftElevator.goToTop()
-      console.log('go to top DONE')
+    // dualshock.on('sharePressed', async () => {
+    //   //arduinoInterface.sendCommand('GET_CURRENT_POSITION');
+    //   await leftElevator.goToTop()
+    //   console.log('go to top DONE')
   
-      return
-      // manual initialization
-      // leftElevator.closeClaw()
+    //   return
+    //   // manual initialization
+    //   // leftElevator.closeClaw()
   
-      // leftElevator.goToOrigin()
-      // console.log('MANUAL INITIALIZATION DONE')
+    //   // leftElevator.goToOrigin()
+    //   // console.log('MANUAL INITIALIZATION DONE')
   
-      // return
+    //   // return
   
-      /*
-      routine prendr Verre
-      elevator.goToMiddle()
-      elevator.openClaw()
-      navigation.eastTranslation()
-      elevator.goToOrigin()
-      navigation.westTranslation()
-      elevator.closeClaw()
-      elevator.goToTop()
-      */
-      /*
-      routine attrapage
-      situation n°3 Yellow team
-      GGRRR
+    //   /*
+    //   routine prendr Verre
+    //   elevator.goToMiddle()
+    //   elevator.openClaw()
+    //   navigation.eastTranslation()
+    //   elevator.goToOrigin()
+    //   navigation.westTranslation()
+    //   elevator.closeClaw()
+    //   elevator.goToTop()
+    //   */
+    //   /*
+    //   routine attrapage
+    //   situation n°3 Yellow team
+    //   GGRRR
   
-      leftElevator.goToTop()
-      // deplacement callage vers au dessus du vers
-      navigation.westTranslation()
-      await
-      this.takeBuos(leftElevator)
-      // decallage d'une boue
-      navigation.westTranslation()
-      await 
-      this.takeBuos(leftElevator)
-      // decallage d'une boue
-      navigation.westTranslation()
-      await 
-      this.takeBuos(leftElevator)
-      navigation.westTranslation()
-      // decallage de deux bouées
-      await
-      this.takeBuos(rightElevator)
-      // decallage d'une boue
-      navigation.westTranslation()
-      await 
-      this.takeBuos(rightElevator)
-      */
+    //   leftElevator.goToTop()
+    //   // deplacement callage vers au dessus du vers
+    //   navigation.westTranslation()
+    //   await
+    //   this.takeBuos(leftElevator)
+    //   // decallage d'une boue
+    //   navigation.westTranslation()
+    //   await 
+    //   this.takeBuos(leftElevator)
+    //   // decallage d'une boue
+    //   navigation.westTranslation()
+    //   await 
+    //   this.takeBuos(leftElevator)
+    //   navigation.westTranslation()
+    //   // decallage de deux bouées
+    //   await
+    //   this.takeBuos(rightElevator)
+    //   // decallage d'une boue
+    //   navigation.westTranslation()
+    //   await 
+    //   this.takeBuos(rightElevator)
+    //   */
   
-      await wait(1000)
-      leftElevator.goToTop()
-      await wait(1 * 1000)
-      await confirm()
-      navigation.westTranslation(50)
-      await wait(0.82 * 1000)
-      navigation.stop()
-      leftElevator.goToMiddle()
-      await wait(1000)
-      leftElevator.openClaw()
-      await wait(700)
-      navigation.northTranslation(30)
-      await wait(400)
-      navigation.stop()
-      await confirm()
-      navigation.eastTranslation(30)
-      await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.goToOrigin()
-      await wait(0.8 * 1000)
-      await confirm()
-      navigation.westTranslation(30)
-      await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.closeClaw()
-      await wait(0.8 * 1000)
-      leftElevator.goToTop()
-      await wait(0.5 * 1000)
-      await confirm()
-      navigation.westTranslation(30)
-      await wait(0.40 * 1000)
-      navigation.stop()
-      await confirm()
-      leftElevator.goToMiddle()
-      await wait(0.40 * 1000)
-      leftElevator.openClaw()
-      await confirm()
-      navigation.eastTranslation(30)
-      await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.goToOrigin()
-      await wait(0.8 * 1000)
-      await confirm()
-      navigation.westTranslation(30)
-      await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.closeClaw()
-      await wait(0.8 * 1000)
-      leftElevator.goToTop()
-      await wait(0.5 * 1000)
-      await confirm()
-      navigation.westTranslation(30)
-      await wait(0.40 * 1000)
-      navigation.stop()
-      await confirm()
-      leftElevator.goToMiddle()
-      await wait(0.40 * 1000)
-      leftElevator.openClaw()
-      await confirm()
-      navigation.eastTranslation(30)
-      await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.goToOrigin()
-      await wait(0.8 * 1000)
-      await confirm()
-      navigation.westTranslation(30)
-      await wait(0.45 * 1000)
-      navigation.stop()
-      leftElevator.closeClaw()
-      await wait(0.8 * 1000)
-      leftElevator.goToTop()
-    })
+    //   await wait(1000)
+    //   leftElevator.goToTop()
+    //   await wait(1 * 1000)
+    //   await confirm()
+    //   navigation.westTranslation(50)
+    //   await wait(0.82 * 1000)
+    //   navigation.stop()
+    //   leftElevator.goToMiddle()
+    //   await wait(1000)
+    //   leftElevator.openClaw()
+    //   await wait(700)
+    //   navigation.northTranslation(30)
+    //   await wait(400)
+    //   navigation.stop()
+    //   await confirm()
+    //   navigation.eastTranslation(30)
+    //   await wait(0.45 * 1000)
+    //   navigation.stop()
+    //   leftElevator.goToOrigin()
+    //   await wait(0.8 * 1000)
+    //   await confirm()
+    //   navigation.westTranslation(30)
+    //   await wait(0.45 * 1000)
+    //   navigation.stop()
+    //   leftElevator.closeClaw()
+    //   await wait(0.8 * 1000)
+    //   leftElevator.goToTop()
+    //   await wait(0.5 * 1000)
+    //   await confirm()
+    //   navigation.westTranslation(30)
+    //   await wait(0.40 * 1000)
+    //   navigation.stop()
+    //   await confirm()
+    //   leftElevator.goToMiddle()
+    //   await wait(0.40 * 1000)
+    //   leftElevator.openClaw()
+    //   await confirm()
+    //   navigation.eastTranslation(30)
+    //   await wait(0.45 * 1000)
+    //   navigation.stop()
+    //   leftElevator.goToOrigin()
+    //   await wait(0.8 * 1000)
+    //   await confirm()
+    //   navigation.westTranslation(30)
+    //   await wait(0.45 * 1000)
+    //   navigation.stop()
+    //   leftElevator.closeClaw()
+    //   await wait(0.8 * 1000)
+    //   leftElevator.goToTop()
+    //   await wait(0.5 * 1000)
+    //   await confirm()
+    //   navigation.westTranslation(30)
+    //   await wait(0.40 * 1000)
+    //   navigation.stop()
+    //   await confirm()
+    //   leftElevator.goToMiddle()
+    //   await wait(0.40 * 1000)
+    //   leftElevator.openClaw()
+    //   await confirm()
+    //   navigation.eastTranslation(30)
+    //   await wait(0.45 * 1000)
+    //   navigation.stop()
+    //   leftElevator.goToOrigin()
+    //   await wait(0.8 * 1000)
+    //   await confirm()
+    //   navigation.westTranslation(30)
+    //   await wait(0.45 * 1000)
+    //   navigation.stop()
+    //   leftElevator.closeClaw()
+    //   await wait(0.8 * 1000)
+    //   leftElevator.goToTop()
+    // })
   }
 }
