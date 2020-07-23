@@ -1,5 +1,5 @@
 const SerialPort = require('serialport')
-const port = new SerialPort('/dev/ttyUSB0', {baudRate: 9600})
+const port = new SerialPort('/dev/ttyUSB1', {baudRate: 9600})
 const StringDecoder = new (require('string_decoder').StringDecoder)('utf8');
 
 port.on('error', function(err) {
