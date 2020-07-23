@@ -27,8 +27,8 @@
 /* Limit switches */
 #define lsBackDrawer 14 // BACK DRAWER       A0
 #define lsFrontDrawer 15 // FRONT DRAWER     A1
-#define lsLeftElevator 8 // LEFT ELEVATOR    D8
-#define lsRightElevator 9 // RIGHT ELEVATOR  D9
+#define lsLeftElevator 9 // LEFT ELEVATOR    D8 8
+#define lsRightElevator 9 // RIGHT ELEVATOR  D9 9
 
 #define button 16
 #define led 13
@@ -111,6 +111,12 @@ void loop() {
         Serial.print(" - ");
         Serial.println(rightElevator.getCurrentPosition());
 
+      } else if (protocol.commandName == "TWIN_GO_TO") {
+        int speed = protocol.commandParam2;
+
+        leftElevator.goTo(protocol.commandParam2, speed);
+        rightElevator.goTo(protocol.commandParam2, speed);
+        
       } else if (protocol.commandName == "ELEVATOR_GO_TO") {
         /**
          * Command ELEVATOR_GO_TO
@@ -146,6 +152,14 @@ void loop() {
             } else {
                 rightElevator.stop();
             }
+        }
+      } else if (protocol.commandName == "TWIN_SET_SPEED") {
+        if (protocol.commandParam1 == 0) {
+          leftElevator.stop();
+          rightElevator.stop();
+        } else {
+          leftElevator.continuous(protocol.commandParam1);
+          rightElevator.continuous(protocol.commandParam1);
         }
       } else if (protocol.commandName == "CMD") {
         Serial.print("CMD: ");
