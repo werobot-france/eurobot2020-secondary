@@ -33,8 +33,8 @@
 #define button 16
 #define led 13
 
-CustomStepper leftElevator(dirLeftElevator, stepLeftElevator, enableLeftElevator, lsLeftElevator, -1);
-CustomStepper rightElevator(dirRightElevator, stepRightElevator, enableRightElevator, lsLeftElevator, -1);
+CustomStepper leftElevator(1, dirLeftElevator, stepLeftElevator, enableLeftElevator, lsLeftElevator, -1);
+CustomStepper rightElevator(0, dirRightElevator, stepRightElevator, enableRightElevator, lsLeftElevator, -1);
 /*
 CustomStepper drawer(dirDrawer, stepDrawer, enableDrawer, lsBackDrawer, lsFrontDrawer);
 */

@@ -4,9 +4,10 @@
  * originSwitchPin is the positive side
  * endSwitchPin is the negative side
  * */
-CustomStepper::CustomStepper(int dirPin, int stepPin, int enablePin, int originSwitchPin, int endSwitchPin = -1)
+CustomStepper::CustomStepper(bool speaker, int dirPin, int stepPin, int enablePin, int originSwitchPin, int endSwitchPin = -1)
 {
     this->runningSpeed = 0;
+    this->speaker = speaker;
     this->enablePin = enablePin;
     this->originSwitchPin = originSwitchPin;
     this->endSwitchPin = endSwitchPin;
@@ -47,7 +48,9 @@ void CustomStepper::loop()
     if (this->moveTask) {
         this->stepper.run();
         if (this->stepper.currentPosition() == this->targetPosition) {
-            Serial.println("CUSTOM_STEPPER: Go to done");
+            if (this->speaker) {
+                Serial.println("CUSTOM_STEPPER: Go to done");
+            }
             this->targetPosition = 0;
             this->moveTask = false;
         }
@@ -69,12 +72,14 @@ void CustomStepper::loop()
             this->disable();
             this->runningSpeed = 0;
 
-            Serial.println(this->stepper.currentPosition());
+            //Serial.println(this->stepper.currentPosition());
 
             this->stepper.setCurrentPosition(0);
             this->stepper.setSpeed(0);
 
-            Serial.println("CUSTOM_STEPPER: Go to origin done");
+            if (this->speaker) {
+                Serial.println("CUSTOM_STEPPER: Go to origin done");
+            }
         }
     }
 }
