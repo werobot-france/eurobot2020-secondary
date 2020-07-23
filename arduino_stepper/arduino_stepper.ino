@@ -27,15 +27,17 @@
 /* Limit switches */
 #define lsBackDrawer 14 // BACK DRAWER       A0
 #define lsFrontDrawer 15 // FRONT DRAWER     A1
-#define lsLeftElevator 9 // LEFT ELEVATOR    D8 8
+#define lsLeftElevator 8 // LEFT ELEVATOR    D8 8
 #define lsRightElevator 9 // RIGHT ELEVATOR  D9 9
 
 #define button 16
 #define led 13
 
 CustomStepper leftElevator(dirLeftElevator, stepLeftElevator, enableLeftElevator, lsLeftElevator, -1);
-CustomStepper rightElevator(dirRightElevator, stepRightElevator, enableRightElevator, lsRightElevator, -1);
+CustomStepper rightElevator(dirRightElevator, stepRightElevator, enableRightElevator, lsLeftElevator, -1);
+/*
 CustomStepper drawer(dirDrawer, stepDrawer, enableDrawer, lsBackDrawer, lsFrontDrawer);
+*/
 
 //LiquidCrystal_PCF8574 lcd(0x27);
 
@@ -60,7 +62,7 @@ void setup() {
   
   leftElevator.init();
   rightElevator.init();
-  drawer.init();
+  //drawer.init();
 
   // Wire.begin();
   // Wire.beginTransmission(0x27);
@@ -81,13 +83,13 @@ void loop() {
 //     digitalWrite(led, LOW);
 //   }
   leftElevator.loop();
-  drawer.loop();
+  //drawer.loop();
   rightElevator.loop();
   protocol.loop();
 
   if (protocol.hasCommand) {
       if (protocol.commandName == "STOP") {
-        drawer.stop();
+        //drawer.stop();
         leftElevator.stop();
         rightElevator.stop();
 
@@ -99,11 +101,11 @@ void loop() {
         leftElevator.setAcceleration(protocol.commandParam1);
       } else if (protocol.commandName == "DRAWER_GO_TO_BACK") {
         
-        drawer.continuous(protocol.commandParam1);
+//        drawer.continuous(protocol.commandParam1);
 
       } else if (protocol.commandName == "DRAWER_GO_TO_FRONT") {
         
-        drawer.continuous(-protocol.commandParam1);
+  //      drawer.continuous(-protocol.commandParam1);
 
       } else if (protocol.commandName == "GET_CURRENT_POSITION") {
         
@@ -114,8 +116,8 @@ void loop() {
       } else if (protocol.commandName == "TWIN_GO_TO") {
         int speed = protocol.commandParam2;
 
-        leftElevator.goTo(protocol.commandParam2, speed);
-        rightElevator.goTo(protocol.commandParam2, speed);
+        leftElevator.goTo(protocol.commandParam1, speed);
+        rightElevator.goTo(protocol.commandParam1, speed);
         
       } else if (protocol.commandName == "ELEVATOR_GO_TO") {
         /**

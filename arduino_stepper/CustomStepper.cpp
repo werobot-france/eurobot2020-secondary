@@ -55,7 +55,17 @@ void CustomStepper::loop()
         this->stepper.runSpeed();
     }
     if (this->runningSpeed != 0) {
-        if (this->runningSpeed > 0 && digitalRead(this->originSwitchPin) == 0) {
+        // Serial.println(digitalRead(this->originSwitchPin));
+        // if (this->runningSpeed > 0 && digitalRead(this->originSwitchPin) == 0) {
+            
+        // } else if (this->endSwitchPin != -1 && this->runningSpeed < 0 && digitalRead(this->endSwitchPin) == 0) {
+        //     this->disable();
+        //     this->runningSpeed = 0;
+        //     this->stepper.setSpeed(0);
+
+        //     Serial.println("CUSTOM_STEPPER: Go to end done");
+        // }
+        if (digitalRead(this->originSwitchPin) == 0) {
             this->disable();
             this->runningSpeed = 0;
 
@@ -65,12 +75,6 @@ void CustomStepper::loop()
             this->stepper.setSpeed(0);
 
             Serial.println("CUSTOM_STEPPER: Go to origin done");
-        } else if (this->endSwitchPin != -1 && this->runningSpeed < 0 && digitalRead(this->endSwitchPin) == 0) {
-            this->disable();
-            this->runningSpeed = 0;
-            this->stepper.setSpeed(0);
-
-            Serial.println("CUSTOM_STEPPER: Go to end done");
         }
     }
 }
