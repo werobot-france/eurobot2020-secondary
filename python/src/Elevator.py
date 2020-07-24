@@ -21,6 +21,14 @@ class Elevator:
     self.mid.angle = angle
     self.right.angle = angle
 
+  def setClawAngle(self, index, angle):
+    if index == 0:
+        self.right.angle = angle
+    if index == 1:
+        self.mid.angle = angle
+    if index == 2:
+        self.left.angle = 180 - angle
+
   def open(self):
     self.setClawsAngle(90)
 

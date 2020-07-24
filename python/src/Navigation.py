@@ -1,147 +1,186 @@
+from math import *
 from time import sleep
 
 '''
-Abstration of navigation
+This class manage all the movement of the robot motorized platform
 '''
 class Navigation:
-  escSlots = {
-    'frontLeft': 15,
-    'frontRight': 12, # 12
-    'backLeft': 14,
-    'backRight': 13 # 13
-  }
-  servoInterface = None
-  
-  def __init__(self, servoInterface = None):
-    self.servoInterface = servoInterface
-    if self.servoInterface != None:
-      for slot in self.escSlots:
-        # 307 est le signal neutre sous 50 Hz (1.5 / 20 x 4096 = 307)
-        self.servoInterface.set_pwm(self.escSlots[slot], 0, 307)
-        #self.servoInterface.servo[self.escSlots[slot]] = 307
-        #sleep(0)
+  def __init__(self, container):
+    self.platform = container.get('platform')
+    self.positionWatcher = container.get('positionWatcher')
+    self.switches = container.get('switches')
+    self.enabled = False
+
+  '''
+  Private
+  '''
+  def getSpeedFromAngle(self, targetAngle, speed):
+    ta = pi - (targetAngle - self.positionWatcher.theta)
+    return [
+      cos(ta+3*pi/4) * speed,
+      sin(ta+3*pi/4) * speed,
+      sin(ta+3*pi/4) * speed,
+      cos(ta+3*pi/4) * speed,
+    ]
+
+  '''
+  @Private
+  '''
+  def getPlatformSpeed(self, initialDist, dist, maxSpeed, minSpeed):
+    p = abs(initialDist - dist)
+    if p <= 25:
+      return self.saturation(0, 25, minSpeed, maxSpeed, p)
     else:
-      print('> NAVIGATION IS MOCKED')
+      l = maxSpeed - minSpeed
+      k = 0.04
+      o = 100
+      return (l/(1+exp(-(k*(dist - o))))) + minSpeed
+
+  '''
+  @Private
+  '''
+  def saturation(self, minX, maxX, minY, maxY, value):
+    # minX = 10*10
+    # maxX = 100*10
+    # minY = 10
+    # maxY = 100
+    minX *= 10
+    maxX *= 10
+    if value <= minX:
+      print('Very start thing case')
+      return minY
+    elif value >= maxX:
+      print('Normal cruise')
+      return maxY
+    else:
+      print('Start thing case')
+      a = (maxY-minY)/(maxX - minX)
+      b = minY - a*minX
+      return a * value + b
+
+  '''
+  Public
+  '''
+  def goTo(self, options):
+    print(options)
+    # targetX, targetY, speed=50, threshold=5, orientation=None
+    # if not self.positionWatcher.isEnabled():
+    #   self.positionWatcher.start()
+    targetX = options['x']
+    targetY = options['y']
+    if 'orientation' in options:
+      orientation = options['orientation']
+    else:
+      orientation = None
       
-  def setPwm(self, arrayLabelValue):
-    #print(arrayLabelValue)
-    if self.servoInterface != None:
-      for label in arrayLabelValue:
-        self.servoInterface.set_pwm(self.escSlots[label], 0, arrayLabelValue[label])
-        #self.servoInterface.servo[self.escSlots[label]] = 307
-        #sleep(0)
+    if 'threshold' in options:
+      threshold = options['threshold']
     else:
-      print(arrayLabelValue)
+      threshold = 5
+          
+    if 'speed' in options:
+      speed = options['speed']
+    else:
+      speed = 50
 
-  # équivalent de la fonction map() de arduino
-  def mappyt(self, x, inMin, inMax, outMin, outMax):
-    return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
-  
-  # fonction esc pour une vitesse de moteur de -100 à 100()
-  def convertSpeedToEsc(self, speed):
-    return round(self.mappyt(speed, 0, 100, 307, 410))
-  
-  def eastTranslation(self, speed):
-    a = self.convertSpeedToEsc(speed)
-    self.setPwm({
-        'frontLeft': a,
-        'frontRight': a,
-        'backLeft': a,
-        'backRight': a
+    self.positionWatcher.pauseWatchPosition()
+    minSpeed = 25
+    if speed < minSpeed:
+      speed = minSpeed
+    self.done = False
+    targetAngle = atan2(targetY, targetX)
+    print("> Navigation: going to (x: %(x)f y: %(y)f) with a angle of %(a)f deg" % {
+      'x': targetX,
+      'y': targetY,
+      'a': degrees(targetAngle)
     })
-    # self.servo.set_pwm(self.escSlots['frontLeft'], 0, a)
-    # self.servo.set_pwm(self.escSlots['frontRight'], 0, a)
-    # self.servo.set_pwm(self.escSlots['backLeft'], 0, a)
-    # self.servo.set_pwm(self.escSlots['backRight'], 0, a)
+    #self.setSpeed(self.getSpeedFromAngle(targetAngle, speed))
+    initialDist = None
+    while not self.done:
+      x, y, theta = self.positionWatcher.computePosition()
+      dist = sqrt((targetX - x)**2 + (targetY - y)**2)
 
-  def southTranslation(self, speed):
-    self.northTranslation(-speed)
+      print("\n\nx:", round(x, 0))
+      print("y:", round(y, 0))
+      print("theta:", round(degrees(theta), 0))
 
-  def northTranslation(self, speed):
-    a = self.convertSpeedToEsc(speed)
-    r = self.convertSpeedToEsc(-speed)
-    self.setPwm({
-        'frontLeft': a,
-        'frontRight': r,
-        'backLeft': r,
-        'backRight': a
-    })
-    # self.servo.set_pwm(self.escSlots['frontLeft'], 0, a)
-    # self.servo.set_pwm(self.escSlots['frontRight'], 0, r)
-    # self.servo.set_pwm(self.escSlots['backLeft'], 0, r)
-    # self.servo.set_pwm(self.escSlots['backRight'], 0, a)
+      if initialDist == None:
+        initialDist = dist
+      if dist <= threshold:
+        self.done = True
+      else:
+        targetAngle = (atan2(targetY - y, targetX - x))%(2*pi)
+        print("targetAngle:", round(degrees(targetAngle), 2))
+        s = self.getPlatformSpeed(initialDist, dist, speed, minSpeed)
+        #print("speed", s)
+        b = self.getSpeedFromAngle(targetAngle, s)
 
-  def westTranslation(self, speed):
-    self.eastTranslation(- speed)
+        if orientation != None:
+          c = (theta - orientation)/2*pi
+          if abs(c*speed) <= speed/4:
+            cmd = c*speed
+          else:
+            cmd = speed/4*c/abs(c)
+          cmds = [
+            cmd,
+            cmd,
+            -cmd,
+            -cmd
+          ]
+          for i in range(4):
+            b[i] += cmds[i]
+            
+        #print("\nMotors:", b, "\n\n\n\n")
+        self.platform.setSpeed(b)
+        
+        if 'stopOn' in options:
+            self.done = self.switches.getState(options.stopOn]
+        print()
 
-  def clockwiseRotation(self, speed):
-    a = self.convertSpeedToEsc(speed)
-    r = self.convertSpeedToEsc(-speed)
-    self.setPwm({
-        'frontLeft': a,
-        'frontRight': a,
-        'backLeft': r,
-        'backRight': r
-    })
-    # self.servo.set_pwm(self.escSlots['frontLeft'], 0, a)
-    # self.servo.set_pwm(self.escSlots['frontRight'], 0, r)
-    # self.servo.set_pwm(self.escSlots['backLeft'], 0, a)
-    # self.servo.set_pwm(self.escSlots['backRight'], 0, r)
+    self.positionWatcher.resumeWatchPosition()
+    self.platform.stop()
+    print('End of goTo')
 
-  def antiClockwiseRotation(self, speed):
-    self.clockwiseRotation(-speed)
+  '''
+  Public
+  '''
+  def relativeGoTo(self, targetDeltaX, targetDeltaY, speed=50, threshold=5, orientation=None):
+    self.positionWatcher.pauseWatchPosition()
+    x, y, theta = self.positionWatcher.computePosition()
+    targetX = x + cos(theta)*targetDeltaX + sin(theta)*targetDeltaY
+    targetY = y + sin(theta)*targetDeltaX + cos(theta)*targetDeltaY
+    self.goTo(targetX, targetY, speed, threshold, orientation)
 
-  def northEastTranslation(self, speed):
-    a = self.convertSpeedToEsc(speed)
-    s = self.convertSpeedToEsc(0)
-    self.setPwm({
-        'frontLeft': a,
-        'frontRight': s,
-        'backLeft': s,
-        'backRight': a
-    })
-    # self.servo.set_pwm(self.escSlots['frontLeft'], 0, a)
-    # self.servo.set_pwm(self.escSlots['frontRight'], 0, s)
-    # self.servo.set_pwm(self.escSlots['backLeft'], 0, s)
-    # self.servo.set_pwm(self.escSlots['backRight'], 0, a)
+  '''
+  Public
+  '''
+  def orientTo(self, orientation, speed=30, threshold=pi/32):
+    self.positionWatcher.pauseWatchPosition()
+    theta = self.positionWatcher.computePosition()[2]
+    while abs(theta - orientation) > threshold:
+      theta = self.positionWatcher.computePosition()[2]
+      c = (theta - orientation)/abs(theta - orientation)
+      speeds = [
+        c*speed,
+        c*speed,
+        -c*speed,
+        -c*speed
+      ]
+      self.platform.setSpeed(speeds)
+      print("\n\nc:", c)
+      print("deltaOrientation:", theta - orientation)
+    
+    self.positionWatcher.resumeWatchPosition()
+    self.platform.stop()
+    print('End of orientTo')
 
-  def southWestTranslation(self, speed):
-    self.northEastTranslation(-speed)
+  '''
+  Public
+  '''
+  def goToPath(self, path):
+    for node in path:
+      self.goTo(node)
+      sleep(0.5)
 
-  def northWestTranslation(self, speed):
-    a = self.convertSpeedToEsc(speed)
-    s = self.convertSpeedToEsc(0)
-    self.setPwm({
-        'frontLeft': s,
-        'frontRight': a,
-        'backLeft': a,
-        'backRight': s
-    })
-    # self.servo.set_pwm(self.escSlots['frontLeft'], 0, s)
-    # self.servo.set_pwm(self.escSlots['frontRight'], 0, a)
-    # self.servo.set_pwm(self.escSlots['backLeft'], 0, a)
-    # self.servo.set_pwm(self.escSlots['backRight'], 0, s)
-
-  def southEastTranslation(self, speed):
-    self.northWestTranslation(-speed)
-
-  def stopAll(self):
-    #print('STOP ALL')
-    speed = self.convertSpeedToEsc(0)
-    self.setPwm({
-      'frontLeft': speed,
-      'frontRight': speed,
-      'backLeft': speed,
-      'backRight': speed
-    })
-    #self.servo.set_pwm(self.escSlots[slot], 0, self.convertSpeedToEsc(0))
-
-  def callSmth(self, speed = 410):
-    self.setPwm({
-      'frontLeft': self.convertSpeedToEsc(0),
-      'frontRight': self.convertSpeedToEsc(0),
-      'backLeft': 410,
-      'backRight': self.convertSpeedToEsc(0)
-    })
-  
-  def  
+    self.platform.stop()
+    print('Path done')

@@ -6,10 +6,12 @@ from math import *
 
 class PositionWatcher:
   perimeter = 60*pi
-  theta = pi / 2
+  theta = pi
   #theta = (0, 0)
-  x = 0
-  y = 0
+  
+  # coté bleu x: 979, y: 159
+  x = 979
+  y = 159
   
   # left
   phaseA = DigitalInputDevice(6, True)

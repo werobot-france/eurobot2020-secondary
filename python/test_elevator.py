@@ -7,11 +7,13 @@ container = Container()
 a = ArduinoManager(container)
 a.identify()
 
-print(container.get('arduinoStepper'))
-print(container.get('arduinoSwitches'))
+# print(container.get('arduinoStepper'))
+# print(container.get('arduinoSwitches'))
 
-e = Elevator(container)
+elevator = Elevator(container)
 
-e.reset()
+# e.reset()
 
-e.goTo(750, 500)
+# e.goTo(750, 500)
+
+print('READY!')
