@@ -172,3 +172,6 @@ class PositionWatcher:
 
   def setPositionChangedHandler(self, handler):
     self.positionChangedHandler = handler
+
+  def getData(self):
+    return [self.x, self.y, self.theta]

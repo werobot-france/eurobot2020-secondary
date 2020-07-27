@@ -27,7 +27,9 @@
         - say yes to access the serial interface
     - [working code](https://gist.github.com/lefuturiste/b30491bd0758af9cf26cbc696270d49a)
     - edit /boot/cmdline.txt
-        - dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait
+        - `dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait`
+    - edit /boot/config.txt, add the following line:
+      - `dtoverlay=pi3-miniuart-bt`
     - [docs](https://wiki.dfrobot.com/TF_Mini_LiDAR_ToF__Laser_Range_Sensor_SKU__SEN0259)
     - pip3 install pyserial
     - [base tutorial](https://github.com/TFmini/TFmini-RaspberryPi/blob/master/README.md)

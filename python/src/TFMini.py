@@ -8,7 +8,7 @@ class TFMini:
   
   def watchDistances(self):
     while True:
-      #time.sleep(0.1)
+      time.sleep(0.1)
       count = self.serial.in_waiting
       if count > 8:
         recv = self.serial.read(9)
