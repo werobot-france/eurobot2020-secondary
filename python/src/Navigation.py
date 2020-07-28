@@ -8,7 +8,7 @@ class Navigation:
   def __init__(self, container):
     self.platform = container.get('platform')
     self.positionWatcher = container.get('positionWatcher')
-    self.switches = container.get('switches')
+    # self.switches = container.get('switches')
     self.enabled = False
 
   '''
@@ -89,6 +89,8 @@ class Navigation:
       speed = minSpeed
     self.done = False
     targetAngle = atan2(targetY, targetX)
+    print(options)
+    print('has stop on', 'stopOn' in options) 
     print("> Navigation: going to (x: %(x)f y: %(y)f) with a angle of %(a)f deg" % {
       'x': targetX,
       'y': targetY,
@@ -134,8 +136,7 @@ class Navigation:
         self.platform.setSpeed(b)
         
         if 'stopOn' in options:
-            self.done = self.switches.getState(options.stopOn]
-        print()
+          self.done = self.switches.getState(options.stopOn)
 
     self.positionWatcher.resumeWatchPosition()
     self.platform.stop()

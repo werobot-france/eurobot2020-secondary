@@ -27,15 +27,17 @@ class Elevator:
     if index == 1:
         self.mid.angle = angle
     if index == 2:
-        self.left.angle = 180 - angle
+        self.left.angle = 190 - angle
 
   def open(self):
-    self.setClawsAngle(90)
+    self.setClawsAngle(100)
 
   def close(self):
-    self.setClawsAngle(90)
+    self.setClawsAngle(35)
 
   def goTo(self, position, speed):
+    # pos haute: 500 steps
+    # pos basse: 80
     self.arduino.sendCommand(
       name = "TWIN_GO_TO",
       params = [position, speed],

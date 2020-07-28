@@ -12,7 +12,7 @@ a.identify()
 
 elevator = Elevator(container)
 
-# e.reset()
+elevator.reset()
 
 # e.goTo(750, 500)
 

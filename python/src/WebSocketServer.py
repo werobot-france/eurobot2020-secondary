@@ -9,7 +9,9 @@ class WebSocketServer:
   clients = []
   mainThread = None
 
-  def __init__(self, listeningPort = 8082, listeningHost = '0.0.0.0'):
+  def __init__(self, container, listeningPort = 8082, listeningHost = '0.0.0.0'):
+    self.navigation = container.get('navigation')
+
     self.server = WebsocketServer(listeningPort, host=listeningHost)
     self.server.set_fn_new_client(self.onClient)
     self.server.set_fn_message_received(self.onMessage)
@@ -39,6 +41,12 @@ class WebSocketServer:
       self.send(client, 'pong', 'pong')
     elif command == 'wowo':
       self.send(client, 'pong', 'pong')
+    elif command == 'goTo':
+      print(args)
+      args['x'] = float(args['x'])
+      args['y'] = float(args['y'])
+      args['speed'] = float(args['speed'])
+      self.navigation.goTo(args)
     else:
       self.send(client, 'error', 'unknown')
 
@@ -61,3 +69,6 @@ class WebSocketServer:
   def start(self):
     self.mainThread = Thread(target=self.server.run_forever)
     self.mainThread.start()
+
+  def stop(self):
+    self.server.server_close()

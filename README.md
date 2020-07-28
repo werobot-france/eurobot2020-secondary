@@ -37,6 +37,15 @@
     - Green = RX
     - only need RX
 
+## Python installation
+
+- pip3 install -r ./requirements.txt
+- pip3 install PyEventEmitter && pip3 install adafruit-pca9685 && pip3 install websocket-server
+
+## Library used
+
+- https://github.com/Pithikos/python-websocket-server
+
 ### dualshock via node
 
 - PyEventEmitter

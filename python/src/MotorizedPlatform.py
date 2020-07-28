@@ -11,21 +11,20 @@ class MotorizedPlatform:
   #   'backRight': 13
   # }
   escSlots = [15, 12, 14, 13]
-  pwmInterface = None
+  PWMDriver = None
   
-  def __init__(self, pwmInterface = None):
-    self.pwmInterface = pwmInterface
-    if self.pwmInterface != None:
-      self.pwmInterface.set_pwm_freq(50)
+  def __init__(self, container = None):
+    self.PWMDriver = container.get('PWMDriver')
+    if self.PWMDriver != None:
       for slot in self.escSlots:
         # 307 est le signal neutre sous 50 Hz (1.5 / 20 x 4096 = 307)
-        self.pwmInterface.set_pwm(slot, 0, 307)
+        self.PWMDriver.setPwm(slot, 0, 307)
     else:
       print('> Motorized platform is mocked!!')
       
   def setSpeed(self, values):
     for i in range(len(values)):
-      self.pwmInterface.set_pwm(
+      self.PWMDriver.setPwm(
         self.escSlots[i],
         0,
         self.convertSpeedToEsc(values[i])

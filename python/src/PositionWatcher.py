@@ -3,8 +3,6 @@ from threading import Thread
 import time
 from math import *
 
-from BMI160_i2c import Driver
-
 '''
 This class manage all the odometry operations
 '''
@@ -50,7 +48,7 @@ class PositionWatcher:
   oldTicks = (0, 0, 0)
 
   # distance entre les deux encodeurs latéraux (milieux) (arrête de la base)
-  axialDistance = 280
+  axialDistance = 280#280
   
   # distance entre l'encodeur arrirère et la droite qui passe par les deux encodeurs latéraux
   backAxialDistance = 110
@@ -59,9 +57,6 @@ class PositionWatcher:
   watchPositionEnabled = False
 
   positionChangedHandler = None
-
-  def __init__(self):
-    print("Pos watcher init")
   
   '''
   This thread will keep updated the left, right and back tick count
@@ -119,6 +114,7 @@ class PositionWatcher:
       backDistance = deltaTicks[2] / 2400 * self.backPerimeter
 
       #deltaTheta = 2 * asin((rightDistance - tb) / self.axialDistance)
+      # print(self.axialDistance)
       deltaTheta = (rightDistance - leftDistance) / self.axialDistance
       
       tb = (leftDistance + rightDistance) / 2
@@ -136,15 +132,17 @@ class PositionWatcher:
   def watchPosition(self):
     while self.watchPositionEnabled:
       self.computePosition()
-      time.sleep(0.01)
+      time.sleep(0.1)
 
   def startWatchTicks(self):
+    print("> PositionWatcher: start watch ticks thread")
     if not self.watchTicksEnabled:
       self.watchTicksEnabled = True
       self.watchTicksThread = Thread(target=self.watchTicks)
       self.watchTicksThread.start()
   
   def startWatchPosition(self):
+    print("> PositionWatcher: start watch position thread")
     if not self.watchPositionEnabled:
       self.watchPositionEnabled = True
       self.watchPositionThread = Thread(target=self.watchPosition)

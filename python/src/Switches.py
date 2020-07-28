@@ -29,6 +29,8 @@ class Switches:
       line = ''
       while len(line) < 2 and self.watchStateEnabled:
         line = self.arduino.readLine()
+        if len(line) == 0:
+          break
         comp = line[0:4].split(':')
         #print(comp[0])
         if comp[0] not in self.groups:

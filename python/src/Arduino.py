@@ -15,7 +15,7 @@ class Arduino:
       timeout = 2
     )
     
-  def getId(self):
+  def getName(self):
     return self.name
 
   # def watchPort(self):
@@ -33,7 +33,7 @@ class Arduino:
     return l.decode('utf-8')
 
   def init(self):
-    print('> Waiting for arduino serial connexion...')
+    print('> Arduino: Waiting for arduino serial connexion...')
     line = ''
     while "Pong!" not in line:
       line = self.sendCommand(
@@ -41,7 +41,7 @@ class Arduino:
         expectResponse = True,
         noFilter = True
       )
-    print('> Arduino initialized!')
+    print('> Arduino: initialized!')
     
   def identify(self):
     line = self.sendCommand(
@@ -50,6 +50,9 @@ class Arduino:
     )
     self.name = line.split("ID:")[1][0:-1]
     return self.name
+  
+  def setName(self, name):
+    self.name = name
 
   def sendCommand(self, **options):
     paramsString = ''
@@ -60,7 +63,13 @@ class Arduino:
         else: 
           paramsString += '#' + param
     command = options['name'] + paramsString
-    print('command sent:', command , 'on device', self.name)
+    #print('command sent:', command , 'on device', self.name)
+
+    name = self.name
+    if len(name) > 0:
+      name = name + ':'
+
+    print("> Arduino:" + name + ' --> ' + command)
     self.serial.write(str.encode(command))
     if 'expectResponse' in options and options['expectResponse']:
       # print(self.serial.is_open)
@@ -72,7 +81,9 @@ class Arduino:
         line = ''
         while len(line) < 2:
           line = self.readLine()
-          print(line)
-      print('response expected:', line)
+          #print(line)
+      #print('response expected:', line)
+      
+      print('> Arduino:' + name + ' <-- ' + line.replace('\n', ''))
       return line
         

@@ -6,9 +6,13 @@ from adafruit_motor import servo
 import serial
 import math
 from threading import Thread
+from multiprocessing import Process
 
 class Lidar:
 
+  enabled = False
+
+  inc = False
   dist = 0
   angle = 0
   period = 0
@@ -27,7 +31,7 @@ class Lidar:
 
     i2c = busio.I2C(SCL, SDA)
     self.pca = PCA9685(i2c)
-    self.pca.frequency = 80
+    self.pca.frequency = 50
 
     self.servo = servo.Servo(self.pca.channels[8])
     self.servo.set_pulse_width_range(400, 2600)
@@ -50,7 +54,7 @@ class Lidar:
   Will try to keep up to date the 'distance' variable
   '''
   def watchDistances(self):
-    while True:
+    while self.enabled:
       sleep(0.01)
       count = self.serial.in_waiting
       if count > 8:
@@ -66,7 +70,7 @@ class Lidar:
     self.angle = 0
     self.inc = False
     delta = 1
-    while True:
+    while self.enabled:
       sleep(0.009)
       if self.angle >= 180 or self.angle <= 0:
         self.inc = not self.inc
@@ -74,7 +78,9 @@ class Lidar:
         self.angle = 180
       if self.angle <= 0:
         self.angle = 0
+      
       self.servo.angle = self.angle
+
       if self.inc:
         self.angle += delta
       else:
@@ -88,12 +94,20 @@ class Lidar:
   Will start to keep up to date the obstacles points
   '''
   def start(self):
-    self.distanceWatcherThread = Thread(target=self.watchDistances)
-    self.distanceWatcherThread.start()
+    self.enabled = True
+    self.inc = False
 
     self.mainThread = Thread(target=self.run)
     self.mainThread.start()
 
+    # self.distanceWatcherThread = Thread(target=self.watchDistances)
+    # self.distanceWatcherThread.start()
+
+    self.distanceWatcherThread = Process(target=self.watchDistances)
+    self.distanceWatcherThread.start()
+    
     # self.communicateThread = Thread(target=self.communication)
     # self.communicateThread.start()
 
+  def stop(self):
+    self.enabled = False

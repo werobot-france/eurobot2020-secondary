@@ -18,12 +18,14 @@ class ArduinoManager:
       results.append(self.identifySingle(d))
 
     for device in results:
-      name = device.getId()
+      name = device.getName()
       if 'STEPPER' in name:
         self.container.set('arduinoStepper', device)
+        device.setName('STEPPER')
         print('> ArduinoManager: Found STEPPER')
       if 'SWITCHES' in name:
         self.container.set('arduinoSwitches', device)
+        device.setName('SWITCHES')
         print('> ArduinoManager: Found SWITCHES')
     return results
 

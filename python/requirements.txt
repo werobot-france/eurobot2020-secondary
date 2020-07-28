@@ -1,2 +1,3 @@
 PyEventEmitter
 adafruit-pca9685
+websocket_server
