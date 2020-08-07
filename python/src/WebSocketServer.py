@@ -10,15 +10,17 @@ class WebSocketServer:
   mainThread = None
 
   def __init__(self, container, listeningPort = 8082, listeningHost = '0.0.0.0'):
-    self.navigation = container.get('navigation')
-
+    #self.navigation = container.get('navigation')
+    self.container = container
     self.server = WebsocketServer(listeningPort, host=listeningHost)
     self.server.set_fn_new_client(self.onClient)
     self.server.set_fn_message_received(self.onMessage)
     self.server.set_fn_client_left(self.onDisconnect)
+    self.game = None
 
   def onClient(self, client, _):
     print("> WebSocket: Got a new client", client)
+    print(client['address'])
     self.clients.append(client)
 
   def onDisconnect(self, client, _):
@@ -37,16 +39,20 @@ class WebSocketServer:
 
     command = messageParsed['command']
     args = messageParsed['args']
+    print(command, args)
     if command == 'ping':
       self.send(client, 'pong', 'pong')
     elif command == 'wowo':
       self.send(client, 'pong', 'pong')
+    elif command == 'arm':
+      self.game.arm(args)
+    elif command == 'abort':
+      self.game.abort()
     elif command == 'goTo':
-      print(args)
       args['x'] = float(args['x'])
       args['y'] = float(args['y'])
       args['speed'] = float(args['speed'])
-      self.navigation.goTo(args)
+      #self.navigation.goTo(args)
     else:
       self.send(client, 'error', 'unknown')
 
@@ -67,6 +73,7 @@ class WebSocketServer:
     return self.send(self.clients[0], type, data)
 
   def start(self):
+    self.game = self.container.get('game')
     self.mainThread = Thread(target=self.server.run_forever)
     self.mainThread.start()
 
