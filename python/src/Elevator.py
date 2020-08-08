@@ -14,26 +14,26 @@ class Elevator:
     self.mid   = servo.Servo(self.pca.channels[10])
     self.right = servo.Servo(self.pca.channels[9])
     
-    self.arduino = container.get('arduinoStepper')
+    #self.arduino = container.get('arduinoStepper')
 
   def setClawsAngle(self, angle):
-    self.left.angle = 180 - angle
+    self.left.angle = (180 - angle) 
     self.mid.angle = angle
-    self.right.angle = angle
+    self.right.angle = angle - 5
 
-  def setClawAngle(self, index, angle):
-    if index == 0:
-        self.right.angle = angle
-    if index == 1:
-        self.mid.angle = angle
-    if index == 2:
-        self.left.angle = 190 - angle
+  # def setClawAngle(self, index, angle):
+  #   if index == 0:
+  #       self.right.angle = angle
+  #   if index == 1:
+  #       self.mid.angle = angle
+  #   if index == 2:
+  #       self.left.angle = 190 - angle
 
   def open(self):
-    self.setClawsAngle(100)
+    self.setClawsAngle(120)
 
   def close(self):
-    self.setClawsAngle(35)
+    self.setClawsAngle(40)
 
   def goTo(self, position, speed):
     # pos haute: 500 steps

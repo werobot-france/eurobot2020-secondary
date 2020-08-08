@@ -4,15 +4,15 @@ from src.ArduinoManager import ArduinoManager
 from src.Arduino import Arduino
 
 container = Container()
-a = ArduinoManager(container)
-a.identify()
+# a = ArduinoManager(container)
+# a.identify()
 
 # print(container.get('arduinoStepper'))
 # print(container.get('arduinoSwitches'))
 
 elevator = Elevator(container)
 
-elevator.reset()
+#elevator.reset()
 
 # e.goTo(750, 500)
 
