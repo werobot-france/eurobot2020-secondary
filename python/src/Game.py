@@ -6,9 +6,18 @@ class Game:
     self.container = container
     self.server = container.get('websocket')
     self.score = 42
+    
+    # blue or yellow
+    self.team = 'blue'
+    
+    # possible values 1, 2 or 3
+    self.buosDisposition = 1
 
   def arm(self, config):
-    print('> Game: Robot armed!')
+    self.team = config['team']
+    self.buosDisposition = config['buosDisposition']
+    
+    print('> Game: Robot armed! Team: ' + self.team + '; buosDisposition: ' + self.buosDisposition)
     print('config', config)
     # wait for the switch to activate
     sleep(3)
