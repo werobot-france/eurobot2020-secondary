@@ -9,59 +9,46 @@ This class manage all the odometry operations
 class PositionWatcher:
   backPerimeter = 90*pi
   lateralPerimeter = 60*pi
-  #theta = 3*pi/2
   
-  theta = pi
+  # distance entre les deux encodeurs latéraux (milieux) (arrête de la base)
+  axialDistance = 284 #280
+  
+  # distance entre l'encodeur arrirère et la droite qui passe par les deux encodeurs latéraux
+  backAxialDistance = 110
   
   # coté bleu x: 979, y: 159
-  x = 979
-  y = 159
+  defaultX = 979
+  defaultY = 159
+  defaultTheta = pi
 
   # left (scotch bleu) encodeur branché sur la prise du milieur
-  phaseA = DigitalInputDevice(20, True)
-  phaseB = DigitalInputDevice(21, True)
+  phaseA = DigitalInputDevice(20, True) # 20 
+  phaseB = DigitalInputDevice(21, True) # 21
   
   # right (sans scotch) encodeur branché côté carte sd
-  phaseC = DigitalInputDevice(16, True)
-  phaseD = DigitalInputDevice(6, True)
+  phaseC = DigitalInputDevice(16, True) # 16
+  phaseD = DigitalInputDevice(6, True) # 6
 
   # back  (scotch vert) encodeur branché coté port USB
   phaseE = DigitalInputDevice(5, True)
   phaseF = DigitalInputDevice(19, True)
   
-  leftTicks = 0
-  rightTicks = 0
-  backTicks = 0
-  
-  leftState = (0, 0)
-  leftOldState = (0, 0)
-  
-  rightState = (0, 0)
-  rightOldState = (0, 0)
-  
-  backState = (0, 0)
-  backOldState = (0, 0)
-  
   watchPositionThread = None
   watchTicksThread = None
-  
-  oldTicks = (0, 0, 0)
-
-  # distance entre les deux encodeurs latéraux (milieux) (arrête de la base)
-  axialDistance = 280#280
-  
-  # distance entre l'encodeur arrirère et la droite qui passe par les deux encodeurs latéraux
-  backAxialDistance = 110
   
   watchTicksEnabled = False
   watchPositionEnabled = False
 
   positionChangedHandler = None
+
+  def __init__(self):
+    self.reset()
   
   '''
   This thread will keep updated the left, right and back tick count
   '''
   def watchTicks(self):
+    print("> PositionWatcher: watchTicks thread START!")
     while self.watchTicksEnabled:
       leftFetchedState = (self.phaseA.value, self.phaseB.value)
       rightFetchedState = (self.phaseC.value, self.phaseD.value)
@@ -95,6 +82,7 @@ class PositionWatcher:
           self.backTicks += 1
 
         self.backOldState = self.backState
+    print("> PositionWatcher: watchTicks thread QUIT!")
 
   '''
   /!\ Call once
@@ -113,16 +101,17 @@ class PositionWatcher:
       rightDistance = deltaTicks[1] / 2400 * self.lateralPerimeter
       backDistance = deltaTicks[2] / 2400 * self.backPerimeter
 
-      #deltaTheta = 2 * asin((rightDistance - tb) / self.axialDistance)
-      # print(self.axialDistance)
-      deltaTheta = (rightDistance - leftDistance) / self.axialDistance
-      
       tb = (leftDistance + rightDistance) / 2
-      backDistance -= deltaTheta*self.backAxialDistance
+      deltaTheta = 2 * asin((rightDistance - tb) / self.axialDistance)
+      # print(self.axialDistance)
+      #deltaTheta = (rightDistance - leftDistance) / self.axialDistance
       
+      #backDistance -= deltaTheta*self.backAxialDistance
+      
+      self.theta += deltaTheta
+      self.theta = self.theta % (2*pi)
       self.x += cos(self.theta) * tb + sin(self.theta) * backDistance
       self.y += sin(self.theta) * tb - cos(self.theta) * backDistance
-      self.theta += deltaTheta
       
       if self.positionChangedHandler != None:
         self.positionChangedHandler(self.x, self.y, self.theta)
@@ -130,19 +119,19 @@ class PositionWatcher:
     return (self.x, self.y, self.theta)
 
   def watchPosition(self):
+    print('> PositionWatcher: watchPosition thread START!')
     while self.watchPositionEnabled:
       self.computePosition()
-      time.sleep(0.1)
+      time.sleep(0.01)
+    print('> PositionWatcher: watchPosition thread QUIT!')
 
   def startWatchTicks(self):
-    print("> PositionWatcher: start watch ticks thread")
     if not self.watchTicksEnabled:
       self.watchTicksEnabled = True
       self.watchTicksThread = Thread(target=self.watchTicks)
       self.watchTicksThread.start()
   
   def startWatchPosition(self):
-    print("> PositionWatcher: start watch position thread")
     if not self.watchPositionEnabled:
       self.watchPositionEnabled = True
       self.watchPositionThread = Thread(target=self.watchPosition)
@@ -152,24 +141,47 @@ class PositionWatcher:
     self.startWatchTicks()
     self.startWatchPosition()
 
-  def isEnabled(self):
-    return self.enabled
-
   def stop(self):
     self.watchTicksThread = False
     self.watchPositionThread = False
 
   def getTicks(self):
-    return [self.leftTicks, self.rightTicks, self.backTicks]
+    return (self.leftTicks, self.rightTicks, self.backTicks)
   
   def pauseWatchPosition(self):
-    self.watchPositionThread = False
+    self.watchPositionEnabled = False
     
   def resumeWatchPosition(self):
+    print('> PositionWatcher: resumed!')
     self.startWatchPosition()
 
   def setPositionChangedHandler(self, handler):
     self.positionChangedHandler = handler
 
+  def getPos(self):
+    return (self.x, self.y, self.theta)
+
   def getData(self):
-    return [self.x, self.y, self.theta]
+    return (self.x, self.y, self.theta)
+
+  def reset(self):
+    self.x = self.defaultX
+    self.y = self.defaultY
+    self.theta = self.defaultTheta
+
+    self.leftTicks = 0
+    self.rightTicks = 0
+    self.backTicks = 0
+
+    self.leftState = (0, 0)
+    self.leftOldState = (0, 0)
+
+    self.rightState = (0, 0)
+    self.rightOldState = (0, 0)
+    
+    self.backState = (0, 0)
+    self.backOldState = (0, 0)
+
+    self.oldTicks = (0, 0, 0)
+
+    print("> PositionWatcher: reset")

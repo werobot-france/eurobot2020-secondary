@@ -1,30 +1,45 @@
 import sys
 from math import *
-from MotorizedPlatform import MotorizedPlatform
-from Navigation import Navigation
-from PositionWatcher import PositionWatcher
-import Adafruit_PCA9685
+from src.Container import Container
+from src.PWMDriver import PWMDriver
+from src.MotorizedPlatform import MotorizedPlatform
+from src.Navigation import Navigation
+from src.PositionWatcher import PositionWatcher
 from time import sleep
 
-pwm = Adafruit_PCA9685.PCA9685()
-platform = MotorizedPlatform(pwm)
+container = Container()
+
 positionWatcher = PositionWatcher()
+positionWatcher.start()
+container.set('positionWatcher', positionWatcher)
+
+driver = PWMDriver()
+container.set('PWMDriver', driver)
+
+platform = MotorizedPlatform(container)
+container.set('platform', platform)
+
+nav = Navigation(container)
+container.set('navigation', nav)
+
+nav = Navigation(container)
+
+positionWatcher.start()
 
 def app():  
   platform.stop()
-  sleep(1.5)
+  sleep(0.5)
   
-  positionWatcher.start()
-  print('started position watcher')
-  
-  nav = Navigation(platform, positionWatcher)
+  input('Start ?')
+  positionWatcher.reset()
+  sleep(0.3)
 
-  nav.goTo(-600, 600, orientation=3*pi/2)
+  nav.goTo({'x': 979, 'y': 0, 'orientation': pi})
 
 try:
   app()
 except KeyboardInterrupt:
-  print("KeyboardInterrupt")
+  print("\n KeyboardInterrupt")
   positionWatcher.stop()
   platform.stop()
   sys.exit()

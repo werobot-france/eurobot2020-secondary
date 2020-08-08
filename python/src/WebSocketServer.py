@@ -8,7 +8,6 @@ from threading import Thread
 class WebSocketServer:
 
   def __init__(self, container, listeningPort = 8082, listeningHost = '0.0.0.0'):
-    #self.navigation = container.get('navigation')
     self.container = container
     self.mainThread = None
     self.clients = []
@@ -96,14 +95,14 @@ class WebSocketServer:
         args['x'] = float(args['x'])
         args['y'] = float(args['y'])
         args['speed'] = float(args['speed'])
-        #self.navigation.goTo(args)
+        self.navigation.goTo(args)
       else:
         # transfert to the secondary robot
         pass
     
     elif command == 'reset':
       if args['robot'] == 'primary':
-        #self.navigation.reset()
+        self.positionWatcher.reset()
         pass
       else:
         # transfert to the secondary robot
@@ -139,6 +138,8 @@ class WebSocketServer:
 
   def start(self):
     self.game = self.container.get('game')
+    self.positionWatcher = self.container.get('positionWatcher')
+    self.navigation = self.container.get('navigation')
     self.mainThread = Thread(target=self.server.run_forever)
     self.mainThread.start()
 

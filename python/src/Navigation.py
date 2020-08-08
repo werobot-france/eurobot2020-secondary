@@ -1,4 +1,5 @@
 from math import *
+import time
 from time import sleep
 
 '''
@@ -8,7 +9,7 @@ class Navigation:
   def __init__(self, container):
     self.platform = container.get('platform')
     self.positionWatcher = container.get('positionWatcher')
-    # self.switches = container.get('switches')
+    #self.switches = container.get('switches')
     self.enabled = False
 
   '''
@@ -63,9 +64,9 @@ class Navigation:
   '''
   def goTo(self, options):
     print(options)
+
     # targetX, targetY, speed=50, threshold=5, orientation=None
-    # if not self.positionWatcher.isEnabled():
-    #   self.positionWatcher.start()
+    
     targetX = options['x']
     targetY = options['y']
     if 'orientation' in options:
@@ -83,14 +84,12 @@ class Navigation:
     else:
       speed = 50
 
-    self.positionWatcher.pauseWatchPosition()
+    #self.positionWatcher.pauseWatchPosition()
     minSpeed = 25
     if speed < minSpeed:
       speed = minSpeed
     self.done = False
     targetAngle = atan2(targetY, targetX)
-    print(options)
-    print('has stop on', 'stopOn' in options) 
     print("> Navigation: going to (x: %(x)f y: %(y)f) with a angle of %(a)f deg" % {
       'x': targetX,
       'y': targetY,
@@ -99,7 +98,8 @@ class Navigation:
     #self.setSpeed(self.getSpeedFromAngle(targetAngle, speed))
     initialDist = None
     while not self.done:
-      x, y, theta = self.positionWatcher.computePosition()
+      #x, y, theta = self.positionWatcher.computePosition()
+      x, y, theta = self.positionWatcher.getPos()
       dist = sqrt((targetX - x)**2 + (targetY - y)**2)
 
       print("\n\nx:", round(x, 0))
@@ -135,10 +135,10 @@ class Navigation:
         #print("\nMotors:", b, "\n\n\n\n")
         self.platform.setSpeed(b)
         
-        if 'stopOn' in options:
-          self.done = self.switches.getState(options.stopOn)
+        # if 'stopOn' in options:
+        #     self.done = self.switches.getState(options.stopOn)
 
-    self.positionWatcher.resumeWatchPosition()
+    #self.positionWatcher.resumeWatchPosition()
     self.platform.stop()
     print('End of goTo')
 

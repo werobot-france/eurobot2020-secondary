@@ -36,12 +36,9 @@ let confirm = () => {
  */
 let dualshock = new (require('./src/Dualshock'))()
 let pwmInterface = new (require('./src/PWMInterface'))()
-//let arduinoInterface = new (require('./src/ArduinoInterface'))("/dev/ttyUSB_NANO")
-let arduinoManager = new (require('./src/ArduinoManager'))()
 
 let navigation = new Navigation(pwmInterface)
 
-let stepperInterface = null
 let container = new Container()
 const main = async () => {
   // await arduinoManager.bindArduino()
@@ -55,42 +52,13 @@ const main = async () => {
   // console.log(inventory)
   // stepperInterface = arduinoManager.getStepperArduino()
 
-  container.set('pwmInterface', pwmInterface)
   container.set('dualshock', dualshock)
-  container.set('arduinoManager', arduinoManager)
-  container.set('stepperInterface', stepperInterface)
 
   /**
    * High hardware layer
    */
   container.set('navigation', navigation)
-  container.set('drawer', new Drawer({
-    pwmInterface,
-    stepperInterface
-  }))
-  container.set('leftElevator', new Elevator({
-    id: 0,
-    label: 'left',
-    pwmInterface,
-    stepperInterface,
-    clawSlot: 11
-  }))
-  container.set('rightElevator', new Elevator({
-    id: 1,
-    label: 'right',
-    pwmInterface,
-    stepperInterface,
-    clawSlot: 10
-  }))
-  container.set('screenInterface', new ScreenInterface({ stepperInterface }))
-  container.set('flag', new Flag({ pwmInterface, servoSlot: 4 }))
   //container.set('encoder', new Encoder(arduinoManager))
-
-  /**
-   * Routines
-   */
-  container.set('stacker', new Stacker(container))
-  container.set('unstacker', new UnStacker(container))
 
   /**
    * Controller
@@ -99,8 +67,8 @@ const main = async () => {
 
   dualshock.on('connected', () => {
     console.log('> Main: Got controller!')
-    dualshock.rumble(150, 150, 0, 0, 0.2)
-    dualshock.setLed(0, 255, 255)
+    // dualshock.rumble(150, 150, 0, 0, 0.2)
+    // dualshock.setLed(0, 255, 255)
   })
   await pwmInterface.init()
 
