@@ -17,9 +17,11 @@ class PositionWatcher:
   backAxialDistance = 110
   
   # coté bleu x: 979, y: 159
-  defaultX = 979
-  defaultY = 159
-  defaultTheta = pi
+  # defaultX = 979
+  # defaultY = 159
+  defaultX = 0
+  defaultY = 0
+  defaultTheta = 3*pi/2
 
   # left (scotch bleu) encodeur branché sur la prise du milieur
   phaseA = DigitalInputDevice(20, True) # 20 
@@ -106,7 +108,7 @@ class PositionWatcher:
       # print(self.axialDistance)
       #deltaTheta = (rightDistance - leftDistance) / self.axialDistance
       
-      #backDistance -= deltaTheta*self.backAxialDistance
+      backDistance -= deltaTheta*self.backAxialDistance
       
       self.theta += deltaTheta
       self.theta = self.theta % (2*pi)
