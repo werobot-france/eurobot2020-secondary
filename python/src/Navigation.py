@@ -62,27 +62,9 @@ class Navigation:
   '''
   Public
   '''
-  def goTo(self, options):
-    print(options)
+  def goTo(self, x, y, theta = None, threshold = 5, speed = 50):
 
     # targetX, targetY, speed=50, threshold=5, orientation=None
-    
-    targetX = options['x']
-    targetY = options['y']
-    if 'orientation' in options:
-      orientation = options['orientation']
-    else:
-      orientation = None
-      
-    if 'threshold' in options:
-      threshold = options['threshold']
-    else:
-      threshold = 5
-          
-    if 'speed' in options:
-      speed = options['speed']
-    else:
-      speed = 50
 
     #self.positionWatcher.pauseWatchPosition()
     minSpeed = 25

@@ -1,20 +1,32 @@
 import websocket
 import json
 from time import sleep
+from threading import Thread
+import random
+import time
 
 class WebSocketClient:
 
-  def __init__(self):
+  def __init__(self, identifier = ''):
+    self.message = ''
+    if identifier == '':
+      identifier = 'terminal_' + str(random.randint(1000, 9999)) + '_' + str(round(time.time(), 3))
+    self.identifier = identifier
     self.ws = None
+    self.mainThread = None
+    self.onOpenHandler = None
+    self.callback = None
 
-  def start(self):
-    websocket.enableTrace(True)
-    def onMessage(ws, message = ""): self.onMessage(ws, message)
+  def run(self):
+    websocket.enableTrace(False)
+    def onMessage(ws, message = ""): 
+      print(message)
+      self.onMessage(ws, message)
     def onError(ws, err): self.onError(ws, err)
     def onClose(ws): self.onClose(ws)
     def onOpen(ws): self.onOpen(ws)
     self.ws = websocket.WebSocketApp(
-      "ws://localhost:8082/?identifier=secondary",
+      'ws://localhost:8082/?identifier=' + self.identifier,
       on_message = onMessage,
       on_error = onError,
       on_close = onClose,
@@ -24,15 +36,23 @@ class WebSocketClient:
     self.ws.run_forever()
     print('> WebSocketClient: end of the client')
     sleep(1)
-    self.start()
+    self.run()
   
-  def send(self, command, args):
+  def start(self):
+    self.mainThread = Thread(target=self.run)
+    self.mainThread.start()
+  
+  def send(self, command, args, callback = None):
     toSend = json.dumps({'command': command, 'args': args})
-    print(toSend)
+    #print(toSend)
+    self.callback = callback
+    print(callback)
     self.ws.send(toSend)
     
   def onOpen(self, ws):
     print('> WebSocketClient: connexion opened')
+    if self.onOpenHandler != None:
+      self.onOpenHandler()
     
   def onClose(self, ws):
     print('> WebSocketClient: connexion closed')
@@ -41,4 +61,6 @@ class WebSocketClient:
     print(error)
     
   def onMessage(self, ws, message):
-    print(message)
+    print(message, self.callback)
+    if self.callback != None:
+      self.callback(message)
