@@ -1,4 +1,4 @@
-from threading import Thread
+from .ThreadHelper import Thread
 
 class Switches:
   
@@ -59,3 +59,9 @@ class Switches:
       
   def stop(self):
     self.watchStateEnabled = False
+    self.watchStateThread.stop()
+    
+  def getState(self, name):
+    if name not in self.state:
+      return False
+    return self.state[name]

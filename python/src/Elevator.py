@@ -14,11 +14,11 @@ class Elevator:
     self.mid   = servo.Servo(self.pca.channels[10])
     self.right = servo.Servo(self.pca.channels[9])
     
-    #self.arduino = container.get('arduinoStepper')
+    self.arduino = container.get('arduinoStepper')
 
   def setClawsAngle(self, angle):
     self.left.angle = (180 - angle) 
-    self.mid.angle = angle
+    self.mid.angle = angle - 5
     self.right.angle = angle - 5
 
   # def setClawAngle(self, index, angle):
@@ -43,10 +43,23 @@ class Elevator:
       params = [position, speed],
       expectResponse = True
     )
+    self.stop()
 
+
+  # elevator go to TOP
+  # elevator go to TAKE
+  # elevator go to BOTTOM
   def reset(self, speed = 350):
     self.arduino.sendCommand(
       name = "TWIN_SET_SPEED",
       params = [-speed],
       expectResponse = True
     )
+
+  def stop(self):
+    self.arduino.sendCommand(
+      name = "STOP",
+      params = [],
+      expectResponse = False
+    )
+

@@ -9,8 +9,10 @@ from src.PositionWatcher import PositionWatcher
 from src.Lidar import Lidar
 from src.Switches import Switches
 from src.WebSocketServer import WebSocketServer
+from src.CommandsManager import CommandsManager
 from src.ArduinoManager import ArduinoManager
 from src.Scripts import Scripts
+from src.Elevator import Elevator
 from time import sleep
 
 if __name__ == '__main__':
@@ -18,10 +20,16 @@ if __name__ == '__main__':
   
   ws = WebSocketServer(container)
   container.set('websocket', ws)
+  
+  scripts = Scripts(container)
+  container.set('scripts', scripts)
 
   game = Game(container)
   container.set('game', game)
   
+  commandsManager = CommandsManager(container)
+  container.set('commandsManager', commandsManager)
+
   positionWatcher = PositionWatcher()
   #positionWatcher.start()
   container.set('positionWatcher', positionWatcher)
@@ -40,16 +48,18 @@ if __name__ == '__main__':
   platform = MotorizedPlatform(container)
   container.set('platform', platform)
 
-  nav = Navigation(container)
-  container.set('navigation', nav)
+  navigation = Navigation(container)
+  container.set('navigation', navigation)
   
-  container.set('scripts', Scripts(container))
+  elevator = Elevator(container)
+  container.set('elevator', elevator)
 
   # lidar = Lidar(container)
   # lidar.start()
   # container.set('lidar', lidar)
   ws.start()
-  
+  commandsManager.init()
+
   def onPos(x, y, t):
     ws.sendData('mainPosition', [x, y, t])
 
@@ -63,9 +73,9 @@ if __name__ == '__main__':
     positionWatcher.reset()
     positionWatcher.start()
     # sleep(1)
-    # nav.goTo({'x':600, 'y':600, 'orientation':pi })
+    # navigation.goTo({'x':600, 'y':600, 'orientation':pi })
     # input('You confirm?')
-    # nav.goTo({ 'x': 979, 'y': 1500, 'orientation': pi, 'speed': 40 })
+    # navigation.goTo({ 'x': 979, 'y': 1500, 'orientation': pi, 'speed': 40 })
     while True:
       sleep(100)
 
@@ -73,10 +83,13 @@ if __name__ == '__main__':
     app()
   except KeyboardInterrupt:
     print("KeyboardInterrupt")
+    switches.stop()
+    scripts.stop()
+    navigation.stop()
     positionWatcher.stop()
     platform.stop()
+    elevator.stop()
     ws.stop()
-    switches.stop()
     platform.stop()
     sys.exit()
 

@@ -19,9 +19,9 @@ class PositionWatcher:
   # coté bleu x: 979, y: 159
   # defaultX = 979
   # defaultY = 159
-  defaultX = 0
-  defaultY = 0
-  defaultTheta = 3*pi/2
+  defaultX = 979
+  defaultY = 159
+  defaultTheta = pi
 
   # left (scotch bleu) encodeur branché sur la prise du milieur
   phaseA = DigitalInputDevice(20, True) # 20 
@@ -144,8 +144,8 @@ class PositionWatcher:
     self.startWatchPosition()
 
   def stop(self):
-    self.watchTicksThread = False
-    self.watchPositionThread = False
+    self.watchTicksEnabled = False
+    self.watchPositionEnabled = False
 
   def getTicks(self):
     return (self.leftTicks, self.rightTicks, self.backTicks)

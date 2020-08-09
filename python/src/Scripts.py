@@ -1,15 +1,27 @@
 
 import os
+import sys
+from .ThreadHelper import Thread
 
 class Scripts:
   def __init__(self, container):
     self.container = container
-  
+    self.scriptThread = None
+    # module = list(map(__import__, ['src.scripts.test_script']))[0].__dict__['scripts'].__dict__['test_script'].__dict__['TestScript']()
+    # print(module)
+    # sys.exit()
+
   def run(self, name):
-    module = list(map(__import__, ['scripts']))[0].__dict__[name]
-    print(module)
+    if (name + '.py') not in os.listdir('src/scripts'):
+      return "Invalid script name"
+    module = list(map(__import__, ['src.scripts.' + name]))[0].__dict__['scripts'].__dict__[name].__dict__[name]
     script = module(self.container)
-    script.run()
-  
+    self.scriptThread = Thread(target=script.run)
+    self.scriptThread.start()
+
   def list(self):
     return os.listdir('src/scripts')
+
+  def stop(self):
+    if self.scriptThread != None:
+      self.scriptThread.stop()

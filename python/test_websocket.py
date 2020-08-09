@@ -16,6 +16,7 @@ commandsManager = CommandsManager(container)
 container.set('commandsManager', commandsManager)
 
 server.start()
+commandsManager.init()
 
 # print('ready \n')
 

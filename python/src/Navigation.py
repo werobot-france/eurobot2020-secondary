@@ -62,8 +62,15 @@ class Navigation:
   '''
   Public
   '''
-  def goTo(self, x, y, theta = None, threshold = 5, speed = 50):
-
+  def goTo(self, args):
+    print(args)
+    # x, y, theta = None, speed = 50, threshold = 5, stopOn = None
+    targetX = args['x']
+    targetY = args['y']
+    orientation = None if 'theta' not in args else args['theta']
+    speed = 40 if 'speed' not in args else args['speed']
+    threshold = 5 if 'threshold' not in args else args['threshold']
+    stopOn = None if 'stopOn' not in args else args['stopOn']
     # targetX, targetY, speed=50, threshold=5, orientation=None
 
     #self.positionWatcher.pauseWatchPosition()
@@ -117,8 +124,8 @@ class Navigation:
         #print("\nMotors:", b, "\n\n\n\n")
         self.platform.setSpeed(b)
         
-        if 'stopOn' in options:
-          self.done = self.switches.getState(options['stopOn'])
+        if stopOn != None:
+          self.done = self.switches.getState(stopOn)
 
     #self.positionWatcher.resumeWatchPosition()
     self.platform.stop()
@@ -128,17 +135,17 @@ class Navigation:
   Public
   '''
   def relativeGoTo(self, targetDeltaX, targetDeltaY, speed=50, threshold=5, orientation=None):
-    self.positionWatcher.pauseWatchPosition()
+    #self.positionWatcher.pauseWatchPosition()
     x, y, theta = self.positionWatcher.computePosition()
     targetX = x + cos(theta)*targetDeltaX + sin(theta)*targetDeltaY
     targetY = y + sin(theta)*targetDeltaX + cos(theta)*targetDeltaY
-    self.goTo(targetX, targetY, speed, threshold, orientation)
+    self.goTo(targetX, targetY, orientation, speed, threshold)
 
   '''
   Public
   '''
   def orientTo(self, orientation, speed=30, threshold=pi/32):
-    self.positionWatcher.pauseWatchPosition()
+    #self.positionWatcher.pauseWatchPosition()
     theta = self.positionWatcher.computePosition()[2]
     while abs(theta - orientation) > threshold:
       theta = self.positionWatcher.computePosition()[2]
@@ -153,7 +160,7 @@ class Navigation:
       print("\n\nc:", c)
       print("deltaOrientation:", theta - orientation)
     
-    self.positionWatcher.resumeWatchPosition()
+    #self.positionWatcher.resumeWatchPosition()
     self.platform.stop()
     print('End of orientTo')
 
@@ -167,3 +174,6 @@ class Navigation:
 
     self.platform.stop()
     print('Path done')
+    
+  def stop(self):
+    self.done = True

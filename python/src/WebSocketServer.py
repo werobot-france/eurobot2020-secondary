@@ -73,7 +73,7 @@ class WebSocketServer:
     elif command == 'execCommand':
       # interpret a command
       res = self.commandsManager.exec(args['payload'])
-      print(res)
+      #print(res)
       self.send(client, 'execCommandResponse', res)
     
     elif command == 'sub':
@@ -136,7 +136,7 @@ class WebSocketServer:
     toSend = json.dumps({'responseType': responseType, 'data': data})
     # if responseType != 'frame':
     #     print(toSend)
-    print(toSend)
+    #print(toSend)
     self.server.send_message(client, toSend)
     return True
 
@@ -157,8 +157,8 @@ class WebSocketServer:
 
   def start(self):
     self.game = self.container.get('game')
-    #self.positionWatcher = self.container.get('positionWatcher')
-    #self.navigation = self.container.get('navigation')
+    self.positionWatcher = self.container.get('positionWatcher')
+    self.navigation = self.container.get('navigation')
     self.commandsManager = self.container.get('commandsManager')
 
     self.mainThread = Thread(target=self.server.run_forever)
