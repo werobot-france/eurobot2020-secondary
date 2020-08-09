@@ -10,6 +10,7 @@ from src.Lidar import Lidar
 from src.Switches import Switches
 from src.WebSocketServer import WebSocketServer
 from src.ArduinoManager import ArduinoManager
+from src.Scripts import Scripts
 from time import sleep
 
 if __name__ == '__main__':
@@ -41,6 +42,8 @@ if __name__ == '__main__':
 
   nav = Navigation(container)
   container.set('navigation', nav)
+  
+  container.set('scripts', Scripts(container))
 
   # lidar = Lidar(container)
   # lidar.start()

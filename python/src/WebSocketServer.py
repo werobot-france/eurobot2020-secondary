@@ -59,13 +59,22 @@ class WebSocketServer:
 
     command = messageParsed['command']
     args = messageParsed['args']
-    print(command, args)
+    #print(command, args)
     
     def getClient():
       return list(filter(lambda c: c['addr'] == addr, self.clients))[0]
     
     if command == 'ping':
       self.send(client, 'pong', 'pong')
+    
+    elif command == 'listCommands':
+      self.send(client, 'listCommandsResponse', self.commandsManager.getCommands())
+    
+    elif command == 'execCommand':
+      # interpret a command
+      res = self.commandsManager.exec(args['payload'])
+      print(res)
+      self.send(client, 'execCommandResponse', res)
     
     elif command == 'sub':
       c = getClient()
@@ -99,7 +108,16 @@ class WebSocketServer:
       else:
         # transfert to the secondary robot
         pass
-    
+
+    elif command == 'orientTo':
+      if args['robot'] == 'primary':
+        args['orientation'] = float(args['orientation'])
+        args['speed'] = float(args['speed'])
+        self.navigation.orientTo(args['orientation'], args['speed'])
+      else:
+        # transfert to the secondary robot
+        pass
+
     elif command == 'reset':
       if args['robot'] == 'primary':
         self.positionWatcher.reset()
@@ -114,10 +132,11 @@ class WebSocketServer:
   def send(self, client, responseType, data = None):
     if not client['handler'].keep_alive:
       return False
+    #print(data)
     toSend = json.dumps({'responseType': responseType, 'data': data})
     # if responseType != 'frame':
     #     print(toSend)
-    #print(toSend)
+    print(toSend)
     self.server.send_message(client, toSend)
     return True
 
@@ -138,8 +157,10 @@ class WebSocketServer:
 
   def start(self):
     self.game = self.container.get('game')
-    self.positionWatcher = self.container.get('positionWatcher')
-    self.navigation = self.container.get('navigation')
+    #self.positionWatcher = self.container.get('positionWatcher')
+    #self.navigation = self.container.get('navigation')
+    self.commandsManager = self.container.get('commandsManager')
+
     self.mainThread = Thread(target=self.server.run_forever)
     self.mainThread.start()
 

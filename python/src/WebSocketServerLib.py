@@ -163,7 +163,12 @@ class WebSocketHandler(StreamRequestHandler):
 
     def read_next_message(self):
 
-        b1, b2 = self.read_bytes(2)
+        try:
+            b1, b2 = self.read_bytes(2)
+        except ValueError:
+            self.keep_alive = 0
+            return
+            pass
 
         fin = b1 & FIN
         opcode = b1 & OPCODE
