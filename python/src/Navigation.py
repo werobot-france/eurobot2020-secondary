@@ -9,7 +9,7 @@ class Navigation:
   def __init__(self, container):
     self.platform = container.get('platform')
     self.positionWatcher = container.get('positionWatcher')
-    #self.switches = container.get('switches')
+    self.switches = container.get('switches')
     self.enabled = False
 
   '''
@@ -135,8 +135,8 @@ class Navigation:
         #print("\nMotors:", b, "\n\n\n\n")
         self.platform.setSpeed(b)
         
-        # if 'stopOn' in options:
-        #     self.done = self.switches.getState(options.stopOn)
+        if 'stopOn' in options:
+          self.done = self.switches.getState(options['stopOn'])
 
     #self.positionWatcher.resumeWatchPosition()
     self.platform.stop()
