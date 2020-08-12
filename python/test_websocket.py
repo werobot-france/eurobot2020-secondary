@@ -1,6 +1,6 @@
 from src.WebSocketServer import WebSocketServer
 from src.CommandsManager import CommandsManager
-
+from src.Scripts import Scripts
 from src.Game import Game
 from src.Container import Container
 
@@ -9,6 +9,9 @@ container = Container()
 server = WebSocketServer(container)
 container.set('websocket', server)
 
+scripts = Scripts(container)
+container.set('scripts', scripts)
+  
 game = Game(container)
 container.set('game', game)
 

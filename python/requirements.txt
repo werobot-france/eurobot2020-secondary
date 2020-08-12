@@ -1,3 +1,8 @@
 PyEventEmitter
 adafruit-pca9685
 websocket_server
+
+# for the prompt
+websocket-client
+pygments-json
+prompt_toolkit

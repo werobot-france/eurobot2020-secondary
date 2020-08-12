@@ -147,9 +147,6 @@ class PositionWatcher:
     self.watchTicksEnabled = False
     self.watchPositionEnabled = False
 
-  def getTicks(self):
-    return (self.leftTicks, self.rightTicks, self.backTicks)
-  
   def pauseWatchPosition(self):
     self.watchPositionEnabled = False
     
@@ -160,6 +157,9 @@ class PositionWatcher:
   def setPositionChangedHandler(self, handler):
     self.positionChangedHandler = handler
 
+  def getTicks(self):
+    return (self.leftTicks, self.rightTicks, self.backTicks)
+  
   def getPos(self):
     return (self.x, self.y, self.theta)
 

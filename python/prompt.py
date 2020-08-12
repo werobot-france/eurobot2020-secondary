@@ -1,24 +1,43 @@
 import random
 import time
+import re
 import sys
+import pygments
+
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit import print_formatted_text
 
-from prompt_toolkit.completion import WordCompleter
+from src.WordCompleter import WordCompleter
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import Style
-from pygments.lexers.sql import SqlLexer
+
+from pygments.lexers.python import Python3Lexer
+
+from prompt_toolkit.formatted_text import PygmentsTokens
+from prompt_toolkit.styles import style_from_pygments_cls
+
+#from pygson.json_lexer import JSONLexer
+from pygments.styles import get_style_by_name
+from pygments.token import Token
 
 from src.WebSocketClient import WebSocketClient
+from src.OutputLexer import OutputLexer
+from src.InputLexer import InputLexer
 
 import json
 
 from websocket import create_connection
 
-ws = create_connection(
-  "ws://localhost:8082/?identifier=" + str(random.randint(1000, 9999)) + '_' + str(round(time.time(), 3))
-)
+uri = sys.argv[1] if len(sys.argv) > 1 else "ws://192.168.1.128:8082"
+
+if uri.find('identifier=') == -1:
+  uri += "?identifier=terminal_" + str(random.randint(1000, 9999)) + '_' + str(int(time.time()))
+
+print('Using uri:', uri)
+
+ws = create_connection(uri)
 
 ws.send(json.dumps({'command': 'listCommands', 'args': {}}))
 
@@ -36,14 +55,15 @@ style = Style.from_dict({
 
 session = PromptSession(
   history=FileHistory('./.main-prompt-history'),
-  lexer=PygmentsLexer(SqlLexer),
+  lexer=PygmentsLexer(InputLexer),
   completer=sql_completer,
-  style=style
+  style=style_from_pygments_cls(get_style_by_name(u'monokai')),
+  reserve_space_for_menu=2
 )
 
 while True:
   try:
-    text = session.prompt('> ', auto_suggest=AutoSuggestFromHistory())
+    text = session.prompt('>>> ', auto_suggest=AutoSuggestFromHistory())
   except KeyboardInterrupt:
     continue
   except EOFError:
@@ -53,10 +73,14 @@ while True:
     ws.send(json.dumps({'command': 'execCommand', 'args': {'payload': text}}))
     res = ws.recv()
     res = json.dumps(json.loads(res)['data'], indent=4)
-    if res[0:2] == '["' or res[0:2] == '{"':
-      print(res)
-    else:
-      print(res)
+    # if res[0:2] == '["' or res[0:2] == '{"':
+      
+    # else:
+    #   print(res)
+    tokens = list(pygments.lex(res, lexer=OutputLexer()))
+    res = PygmentsTokens(tokens)
+    res.token_list.pop()
+    print_formatted_text(res, style=style_from_pygments_cls(get_style_by_name(u'monokai')))
     
 print('GoodBye!')
 ws.close()

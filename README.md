@@ -45,6 +45,7 @@
 ## Library used
 
 - https://github.com/Pithikos/python-websocket-server
+- https://github.com/orb/pygments-json
 
 ### dualshock via node
 
@@ -121,3 +122,9 @@ rfkill unblock bluetooth
 
 - disable feature on elevator
 - disable elevator until go to origin to prevent steps jumps
+
+### _note for recovery system
+
+```
+tmpfs /python-recovery tmpfs nodev,nosuid,size=2M 0 0
+```
