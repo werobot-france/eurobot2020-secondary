@@ -3,7 +3,7 @@ import logging
 import base64
 import json
 import re
-from threading import Thread
+from .ThreadHelper import Thread
 
 class WebSocketServer:
 
@@ -36,7 +36,7 @@ class WebSocketServer:
       'subs': [],
       'instance': client
     })
-    print('clients', len(self.clients))
+    # print('clients', len(self.clients))
 
   def onDisconnect(self, client, _):
     addr = self.getAddr(client)
@@ -44,10 +44,10 @@ class WebSocketServer:
 
     # remove the client from the list of connected client
     self.clients = list(filter(lambda c: c['addr'] != addr, self.clients))
-    print('clients', len(self.clients))
+    # print('clients', len(self.clients))
 
   def onMessage(self, client, server, message):
-    print("> Got a new message", message)
+    print("> WebSocket: Got a new message", message)
     addr = self.getAddr(client)
     # We parse the json of the message
     messageParsed = json.loads(message)
@@ -104,7 +104,8 @@ class WebSocketServer:
         args['x'] = float(args['x'])
         args['y'] = float(args['y'])
         args['speed'] = float(args['speed'])
-        self.navigation.goTo(args)
+        args['theta'] = float(args['theta'])
+        self.navigation.goTo(**args)
       else:
         # transfert to the secondary robot
         pass
@@ -166,3 +167,4 @@ class WebSocketServer:
 
   def stop(self):
     self.server.server_close()
+    self.mainThread.stop()

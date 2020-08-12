@@ -1,20 +1,20 @@
 import copy
+from math import pi, radians, degrees
 
 class CommandsManager:
   def __init__(self, container):
     self.container = container
+    goToArgs = [
+      ['x', True], ['y', True],
+      ['theta', False],
+      ['speed', False], ['stopOn', False]
+    ]
     self.commands = [
       {
         'name': 'ping',
         'description': 'Answer with pong!',
         'arguments': [],
         'handler': self.ping
-      },
-      {
-        'name': 'compo',
-        'description': 'Debug command parsing',
-        'arguments': -1,
-        'handler': self.compo
       },
       {
         'name': 'listCommands',
@@ -32,19 +32,31 @@ class CommandsManager:
         'name': 'reset',
         'description': "Will reset the position watcher",
         'arguments': [],
-        'handler': self.goTo
+        'handler': self.reset
       },
       {
         'name': 'goto',
         'description': "It's your slave!",
-        'arguments': [['x', True], ['y', True], ['speed', False], ['theta', False], ['stopOn', False]],
+        'arguments': goToArgs,
         'handler': self.goTo
+      },
+      {
+        'name': 'relativeGoto',
+        'description': "It's your slave!",
+        'arguments': goToArgs,
+        'handler': self.relativeGoTo
       },
       {
         'name': 'listScripts',
         'description': 'List files in the script directory',
         'arguments': [],
         'handler': self.listScripts
+      },
+      {
+        'name': 'pos',
+        'description': 'Get pos',
+        'arguments': [],
+        'handler': self.pos
       },
       {
         'name': 'execScript',
@@ -55,7 +67,7 @@ class CommandsManager:
       {
         'name': 'elevator',
         'description': 'Stepper goto or origin',
-        'arguments': [['step', True]],
+        'arguments': [['steps', True], ['speed', False]],
         'handler': self.elevator
       },
       {
@@ -69,6 +81,12 @@ class CommandsManager:
         'description': 'Will stop the current running script',
         'arguments': [],
         'handler': self.stop
+      },
+      {
+        'name': 'orientTo',
+        'description': 'Will orient to the desired angle',
+        'arguments': [['theta', True], ['speed', False]],
+        'handler': self.orientTo
       }
     ]
     def filter(item):
@@ -77,11 +95,11 @@ class CommandsManager:
     self.newCommands = list(map(filter, copy.deepcopy(self.commands)))
     
   def init(self):
-    # self.positionWatcher = self.container.get('positionWatcher')
-    # self.navigation = self.container.get('navigation')
-    # self.platform = self.container.get('platform')
+    self.positionWatcher = self.container.get('positionWatcher')
+    self.navigation = self.container.get('navigation')
+    self.platform = self.container.get('platform')
+    self.elevator = self.container.get('elevator')
     self.scripts = self.container.get('scripts')
-    #self.elevator = self.container.get('elevator')
   
   '''
   parse the command and return a string with a format type (text or json)
@@ -172,33 +190,30 @@ class CommandsManager:
   def ping(self, _):
     return "Pong!"
   
-  def compo(self, components):
-    return components
-  
   def listScripts(self, _):
     return self.scripts.list()
   
   def execScript(self, components):
-    return self.scripts.run(components[0])
+    return self.scripts.run(components['name'])
 
   def elevator(self, components):
-    if len(components) == 1:
-      components.append(300)
-    components[1] = int(components[1])
-    if components[0] == 'origin':
-      self.elevator.reset(components[1])
+    if 'speed' not in components:
+      components['speed'] = 300
+    components['speed'] = int(components['speed'])
+    if components['steps'] == 'origin':
+      self.elevator.reset(components['speed'])
     else:
-      components[0] = int(components[0])
-      self.elevator.goTo(components[0], components[1])
+      components['steps'] = int(components['steps'])
+      self.elevator.goTo(components['steps'], components['speed'])
     return 'OK'
 
   def claws(self, components):
-    if components[0] == 'open':
+    if components['angle'] == 'open':
       self.elevator.open()
-    elif components[0] == 'close':
+    elif components['angle'] == 'close':
       self.elevator.close()
     else: 
-      self.elevator.setClawsAngle(int(components[0]))
+      self.elevator.setClawsAngle(int(components['angle']))
     return 'OK'
 
   def stop(self, _):
@@ -207,10 +222,39 @@ class CommandsManager:
     self.platform.stop()
     self.scripts.stop()
     self.elevator.stop()
+    
+    
+  def parseAngleArgs(self, args):
+    if 'thetaDeg' in args:
+      args['theta'] = radians(args['thetaDeg'])
+    
+    if 'theta' in args:
+      args['theta'] = eval(str(args['theta']), { 'pi': pi })
+    return args
   
-  def goTo(self, components):
-    print(components)
-    #self.navigation.goTo(**components)
+  def goTo(self, args):
+    args = self.parseAngleArgs(args)
+    self.navigation.goTo(**args)
+    return 'Done'
+
+  def relativeGoTo(self, args):
+    args = self.parseAngleArgs(args)
+    self.navigation.relativeGoTo(**args)
+    return 'OK'
+  
+  def orientTo(self, args):
+    args = self.parseAngleArgs(args)
+    self.navigation.orientTo(**args)
+    return 'OK'
+
+  def reset(self, args):
+    self.positionWatcher.reset()
+    return 'OK'
+  
+  def pos(self, args):
+    data = list(self.positionWatcher.getPos())
+    data[2] = [data[2], degrees(data[2])]
+    return data
   
   def example(self, components):
     return 'OK'

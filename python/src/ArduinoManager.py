@@ -1,6 +1,5 @@
 import os
 from .Arduino import Arduino
-from joblib import Parallel, delayed
 
 class ArduinoManager:
   def __init__(self, container):

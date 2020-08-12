@@ -62,7 +62,7 @@ class Navigation:
   '''
   Public
   '''
-  def goTo(self, args):
+  def goTo(self, **args):
     print(args)
     # x, y, theta = None, speed = 50, threshold = 5, stopOn = None
     targetX = args['x']
@@ -129,24 +129,38 @@ class Navigation:
 
     #self.positionWatcher.resumeWatchPosition()
     self.platform.stop()
-    print('End of goTo')
+    print('> Navigation: End of goTo')
 
   '''
   Public
   '''
-  def relativeGoTo(self, targetDeltaX, targetDeltaY, speed=50, threshold=5, orientation=None):
+  def relativeGoTo(self, **args):
+    # args = targetDeltaX, targetDeltaY, speed=50, threshold=5, orientation=None
     #self.positionWatcher.pauseWatchPosition()
     x, y, theta = self.positionWatcher.computePosition()
-    targetX = x + cos(theta)*targetDeltaX + sin(theta)*targetDeltaY
-    targetY = y + sin(theta)*targetDeltaX + cos(theta)*targetDeltaY
-    self.goTo(targetX, targetY, orientation, speed, threshold)
+    args['x'] = x + cos(theta)*args['y'] - sin(theta)*args['x']
+    args['y'] = y + sin(theta)*args['y'] - cos(theta)*args['x']
+    self.goTo(**args)
 
   '''
   Public
   '''
-  def orientTo(self, orientation, speed=30, threshold=pi/32):
+  def orientTo(self, **args):
+    orientation = args['theta']
+    speed = 30 if 'speed' not in args else args['speed']
+    threshold = pi/32 if 'threshold' not in args else args['threshold']
+    # orientation, speed=30, threshold=pi/32
+    
     #self.positionWatcher.pauseWatchPosition()
+    
     theta = self.positionWatcher.computePosition()[2]
+    
+    print("> Navigation: orient to (currentTheta: %(c)f, targetTheta: %(t)f, speed %(s)f)" % {
+      's': speed,
+      'c': degrees(theta),
+      't': degrees(orientation)
+    })
+    
     while abs(theta - orientation) > threshold:
       theta = self.positionWatcher.computePosition()[2]
       c = (theta - orientation)/abs(theta - orientation)
@@ -162,7 +176,7 @@ class Navigation:
     
     #self.positionWatcher.resumeWatchPosition()
     self.platform.stop()
-    print('End of orientTo')
+    print('> Navigation: End of orientTo')
 
   '''
   Public

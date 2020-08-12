@@ -1,5 +1,5 @@
 from gpiozero import DigitalInputDevice
-from threading import Thread
+from .ThreadHelper import Thread
 import time
 from math import *
 
@@ -146,6 +146,10 @@ class PositionWatcher:
   def stop(self):
     self.watchTicksEnabled = False
     self.watchPositionEnabled = False
+    if self.watchTicksThread != None:
+      self.watchTicksThread.stop()
+    if self.watchPositionThread != None:
+      self.watchPositionThread.stop()
 
   def pauseWatchPosition(self):
     self.watchPositionEnabled = False

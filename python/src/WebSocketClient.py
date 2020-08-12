@@ -1,7 +1,7 @@
 import websocket
 import json
 from time import sleep
-from threading import Thread
+from .ThreadHelper import Thread
 import random
 import time
 
