@@ -68,6 +68,7 @@ class Navigation:
     targetX = args['x']
     targetY = args['y']
     orientation = None if 'theta' not in args else args['theta']
+    orientationError = 0
     speed = 40 if 'speed' not in args else args['speed']
     threshold = 5 if 'threshold' not in args else args['threshold']
     stopOn = None if 'stopOn' not in args else args['stopOn']
@@ -97,7 +98,9 @@ class Navigation:
 
       if initialDist == None:
         initialDist = dist
-      if dist <= threshold:
+
+
+      if dist <= threshold and orientationError <= pi/32:
         self.done = True
       else:
         targetAngle = (atan2(targetY - y, targetX - x))%(2*pi)
@@ -107,11 +110,12 @@ class Navigation:
         b = self.getSpeedFromAngle(targetAngle, s)
 
         if orientation != None:
-          c = (theta - orientation)/2*pi
-          if abs(c*speed) <= speed/4:
-            cmd = c*speed
+          orientationError = (theta - orientation)/2*pi
+          if abs(orientationError*speed) <= speed/4:
+            cmd = orientationError*speed
           else:
-            cmd = speed/4*c/abs(c)
+            cmd = speed/4*orientationError/abs(orientationError)
+          if cmd < 15: cmd = 15
           cmds = [
             cmd,
             cmd,
@@ -138,7 +142,7 @@ class Navigation:
     # args = targetDeltaX, targetDeltaY, speed=50, threshold=5, orientation=None
     #self.positionWatcher.pauseWatchPosition()
     x, y, theta = self.positionWatcher.computePosition()
-    args['x'] = x + cos(theta)*args['y'] - sin(theta)*args['x']
+    args['x'] = x + cos(theta)*args['y'] + sin(theta)*args['x']
     args['y'] = y + sin(theta)*args['y'] - cos(theta)*args['x']
     self.goTo(**args)
 
@@ -146,37 +150,9 @@ class Navigation:
   Public
   '''
   def orientTo(self, **args):
-    orientation = args['theta']
-    speed = 30 if 'speed' not in args else args['speed']
-    threshold = pi/32 if 'threshold' not in args else args['threshold']
-    # orientation, speed=30, threshold=pi/32
-    
-    #self.positionWatcher.pauseWatchPosition()
-    
-    theta = self.positionWatcher.computePosition()[2]
-    
-    print("> Navigation: orient to (currentTheta: %(c)f, targetTheta: %(t)f, speed %(s)f)" % {
-      's': speed,
-      'c': degrees(theta),
-      't': degrees(orientation)
-    })
-    
-    while abs(theta - orientation) > threshold:
-      theta = self.positionWatcher.computePosition()[2]
-      c = (theta - orientation)/abs(theta - orientation)
-      speeds = [
-        c*speed,
-        c*speed,
-        -c*speed,
-        -c*speed
-      ]
-      self.platform.setSpeed(speeds)
-      print("\n\nc:", c)
-      print("deltaOrientation:", theta - orientation)
-    
-    #self.positionWatcher.resumeWatchPosition()
-    self.platform.stop()
-    print('> Navigation: End of orientTo')
+    x, y, theta = self.positionWatcher.getPos()
+    targetTheta = theta+args["theta"] if args["relative"] in args else args['theta']
+    self.goTo(x=x, y=y, theta=targetTheta)
 
   '''
   Public
