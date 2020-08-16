@@ -20,6 +20,10 @@ if __name__ == '__main__':
   
   ws = WebSocketServer(container)
   container.set('websocket', ws)
+
+  arduinoManager = ArduinoManager(container)
+  arduinoManager.identify()
+  container.set('arduinoManager', arduinoManager)
   
   scripts = Scripts(container)
   container.set('scripts', scripts)
@@ -33,10 +37,6 @@ if __name__ == '__main__':
   positionWatcher = PositionWatcher()
   #positionWatcher.start()
   container.set('positionWatcher', positionWatcher)
-
-  arduinoManager = ArduinoManager(container)
-  arduinoManager.identify()
-  container.set('arduinoManager', arduinoManager)
 
   switches = Switches(container)
   switches.start()

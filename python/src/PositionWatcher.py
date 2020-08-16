@@ -7,7 +7,7 @@ from math import *
 This class manage all the odometry operations
 '''
 class PositionWatcher:
-  backPerimeter = 90*pi
+  backPerimeter = 88*pi
   lateralPerimeter = 60*pi
   
   # distance entre les deux encodeurs latéraux (milieux) (arrête de la base)
