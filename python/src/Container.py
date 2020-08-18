@@ -5,6 +5,8 @@ class Container:
     self.instances[name] = instance
   
   def get(self, name):
+    if name not in self.instances:
+      return None
     return self.instances[name]
 
   def count(self):

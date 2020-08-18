@@ -21,7 +21,6 @@ class Thread:
     self.thread.start()
     
   def stop(self):
-    print(self.thread.isAlive())
     if not self.thread.isAlive():
       return
     tid = self.thread.ident

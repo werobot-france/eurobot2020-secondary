@@ -6,6 +6,7 @@ class Arduino:
   name = ''
 
   def __init__(self, path, baudrate = 9600):
+    self.logger = self.container.get('logger').get('Arduino')
     self.serial = serial.Serial(
       port = path,
       baudrate = baudrate,
@@ -33,7 +34,7 @@ class Arduino:
     return l.decode('utf-8')
 
   def init(self):
-    print('> Arduino: Waiting for arduino serial connexion...')
+    self.logger.info("Waiting for arduino serial connexion...")
     line = ''
     while "Pong!" not in line:
       line = self.sendCommand(
@@ -41,7 +42,7 @@ class Arduino:
         expectResponse = True,
         noFilter = True
       )
-    print('> Arduino: initialized!')
+    self.logger.info("Initialized!")
     
   def identify(self):
     line = self.sendCommand(
@@ -69,7 +70,7 @@ class Arduino:
     if len(name) > 0:
       name = name + ':'
 
-    print("> Arduino:" + name + ' --> ' + command)
+    self.logger.debug(name + ' --> ' + command)
     self.serial.write(str.encode(command))
     if 'expectResponse' in options and options['expectResponse']:
       # print(self.serial.is_open)
@@ -84,6 +85,6 @@ class Arduino:
           #print(line)
       #print('response expected:', line)
       
-      print('> Arduino:' + name + ' <-- ' + line.replace('\n', ''))
+      self.logger.debug(name + ' <-- ' + line.replace('\n', ''))
       return line
         

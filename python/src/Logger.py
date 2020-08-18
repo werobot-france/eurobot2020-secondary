@@ -27,16 +27,16 @@ class Logger:
   def log(self, message, level):
     self.manager.log(message, level, self.name)
 
-  def debug(self, message):
+  def debug(self, *message):
     self.log(message, 'debug')
   
-  def info(self, message):
+  def info(self, *message):
     self.log(message, 'info')
   
-  def warn(self, message):
+  def warn(self, *message):
     self.log(message, 'warn')
     
-  def error(self, message):
+  def error(self, *message):
     self.log(message, 'error')
     
   def data(self, data):
@@ -61,11 +61,13 @@ class LoggerManager:
   
   longTermPath = './logs'
   
-  def __init__(self):
-    self.resetClock()
+  startedAt = None
  
-  def resetClock(self):
+  def startClock(self):
     self.startedAt = time.time()
+
+  def stopClock(self):
+    self.startedAt = None
 
   def get(self, name = 'root'):
     return Logger(self, name)
@@ -73,7 +75,14 @@ class LoggerManager:
   def setLevel(self, level = 'info'):
     self.outputLevel = list(self.levels.keys()).index(level)
   
-  def log(self, message, level = 'info', name = 'root'):
+  def log(self, rawMessage, level = 'info', name = 'root'):
+    message = ''
+    for var in rawMessage:
+      if isinstance(var, str):
+        message += var + ' '
+      else:
+        message += str(var) + ' '
+    
     if level not in self.levels:
       return
     
@@ -82,9 +91,14 @@ class LoggerManager:
     
     level = self.levels[level]
     
-    elapsed = time.time() - self.startedAt
+    if self.startedAt != None:
+      elapsed = time.time() - self.startedAt
+    else:
+      elapsed = -1
+
+    elapsed = str(round(elapsed, 3)).zfill(8)
     
-    line = TerminalColors.GRAY + str(round(elapsed, 3)) + ' - ' +TerminalColors.ENDC 
+    line = TerminalColors.GRAY + elapsed + ' - ' +TerminalColors.ENDC 
     line += level[1] + level[0] + TerminalColors.ENDC + TerminalColors.GRAY + ' - ' + TerminalColors.ENDC 
     line += TerminalColors.LIGHT + name + TerminalColors.GRAY + ' > ' + TerminalColors.ENDC
     line += message

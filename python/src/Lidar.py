@@ -28,6 +28,7 @@ class Lidar:
     self.serial = serial.Serial("/dev/ttyAMA0", 115200)
     self.websocket = container.get('websocket')
     self.positionWatcher = container.get('positionWatcher')
+    self.logger = self.container.get('logger').get('Lidar')
 
     i2c = busio.I2C(SCL, SDA)
     self.pca = PCA9685(i2c)
@@ -94,6 +95,7 @@ class Lidar:
   Will start to keep up to date the obstacles points
   '''
   def start(self):
+    self.logger.info('Started')
     self.enabled = True
     self.inc = False
 
@@ -110,4 +112,5 @@ class Lidar:
     # self.communicateThread.start()
 
   def stop(self):
+    self.logger.info('Stopped')
     self.enabled = False
