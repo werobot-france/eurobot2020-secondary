@@ -30,7 +30,7 @@ class ArduinoManager:
     return results
 
   def identifySingle(self, device):
-    instance = Arduino('/dev/' + device)
+    instance = Arduino(self.container, '/dev/' + device)
     instance.init()
     instance.identify()
     return instance

@@ -14,7 +14,7 @@ class MotorizedPlatform:
   PWMDriver = None
   
   def __init__(self, container = None):
-    self.logger = self.container.get('logger').get('MotorizedPlatform')
+    self.logger = container.get('logger').get('MotorizedPlatform')
     self.PWMDriver = container.get('PWMDriver')
     if self.PWMDriver != None:
       for slot in self.escSlots:

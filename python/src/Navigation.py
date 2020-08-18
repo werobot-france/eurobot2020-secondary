@@ -7,6 +7,7 @@ This class manage all the movement of the robot motorized platform
 '''
 class Navigation:
   def __init__(self, container):
+    self.logger = container.get('logger').get('Navigation')
     self.platform = container.get('platform')
     self.positionWatcher = container.get('positionWatcher')
     self.switches = container.get('switches')
@@ -48,13 +49,13 @@ class Navigation:
     minX *= 10
     maxX *= 10
     if value <= minX:
-      print('Very start thing case')
+      #print('Very start thing case')
       return minY
     elif value >= maxX:
-      print('Normal cruise')
+      #print('Normal cruise')
       return maxY
     else:
-      print('Start thing case')
+      #print('Start thing case')
       a = (maxY-minY)/(maxX - minX)
       b = minY - a*minX
       return a * value + b
@@ -63,7 +64,6 @@ class Navigation:
   Public
   '''
   def goTo(self, **args):
-    print(args)
     # x, y, theta = None, speed = 50, threshold = 5, stopOn = None
     targetX = args['x']
     targetY = args['y']
@@ -79,12 +79,14 @@ class Navigation:
       speed = minSpeed
     self.done = False
     targetAngle = atan2(targetY, targetX)
-    print("> Navigation: going to (x: %(x)f y: %(y)f) with a angle of %(a)f deg" % {
+    self.logger.info("GoTo", {
       'x': targetX,
       'y': targetY,
-      'a': degrees(targetAngle)
+      'theta': degrees(orientation),
+      'stopOn': stopOn,
+      'speed': speed,
+      'threshold': threshold
     })
-    print('THRESHOLD DE TES GRANDS MORRT', threshold)
     #self.setSpeed(self.getSpeedFromAngle(targetAngle, speed))
     initialDist = None
     while not self.done:
@@ -92,9 +94,12 @@ class Navigation:
       x, y, theta = self.positionWatcher.getPos()
       dist = sqrt((targetX - x)**2 + (targetY - y)**2)
 
-      print("\n\nx:", round(x, 0))
-      print("y:", round(y, 0))
-      print("theta:", round(degrees(theta), 0))
+      self.logger.debug({
+        'x': round(x, 0),
+        'y': round(y, 0),
+        'theta': round(degrees(theta), 0),
+        'targetAngle': round(degrees(targetAngle), 2)
+      })
 
       if initialDist == None:
         initialDist = dist
@@ -102,7 +107,7 @@ class Navigation:
         self.done = True
       else:
         targetAngle = (atan2(targetY - y, targetX - x))%(2*pi)
-        print("targetAngle:", round(degrees(targetAngle), 2))
+        #print("targetAngle:", round(degrees(targetAngle), 2))
         s = self.getPlatformSpeed(initialDist, dist, speed, minSpeed)
         #print("speed", s)
         b = self.getSpeedFromAngle(targetAngle, s)
@@ -130,7 +135,7 @@ class Navigation:
 
     #self.positionWatcher.resumeWatchPosition()
     self.platform.stop()
-    print('> Navigation: End of goTo')
+    self.logger.info("End of GoTo")
 
   '''
   Public
@@ -156,10 +161,10 @@ class Navigation:
     
     theta = self.positionWatcher.computePosition()[2]
     
-    print("> Navigation: orient to (currentTheta: %(c)f, targetTheta: %(t)f, speed %(s)f)" % {
-      's': speed,
-      'c': degrees(theta),
-      't': degrees(orientation)
+    self.logger.info("OrientTo", {
+      'currentTheta': degrees(theta),
+      'targetTheta': degrees(orientation),
+      'speed': speed
     })
     
     while abs(theta - orientation) > threshold:
@@ -172,12 +177,14 @@ class Navigation:
         -c*speed
       ]
       self.platform.setSpeed(speeds)
-      print("\n\nc:", c)
-      print("deltaOrientation:", theta - orientation)
+      self.logger.debug({
+        'c': c,
+        'deltaOrientation': round(degrees(theta - orientation), 2)
+      })
     
     #self.positionWatcher.resumeWatchPosition()
     self.platform.stop()
-    print('> Navigation: End of orientTo')
+    self.logger.info("End of OrientTo")
 
   '''
   Public
@@ -188,7 +195,7 @@ class Navigation:
       sleep(0.5)
 
     self.platform.stop()
-    print('Path done')
+    self.logger.info("Path done")
     
   def stop(self):
     self.done = True

@@ -43,9 +43,9 @@ class PositionWatcher:
 
   positionChangedHandler = None
 
-  def __init__(self):
-    self.logger = self.container.get('logger').get('PositionWatcher')
-    self.reset()
+  def __init__(self, container):
+    self.logger = container.get('logger').get('PositionWatcher')
+    self.reset(False)
   
   '''
   This thread will keep updated the left, right and back tick count
@@ -172,7 +172,7 @@ class PositionWatcher:
   def getData(self):
     return (self.x, self.y, self.theta)
 
-  def reset(self):
+  def reset(self, log = True):
     self.x = self.defaultX
     self.y = self.defaultY
     self.theta = self.defaultTheta
@@ -192,4 +192,5 @@ class PositionWatcher:
 
     self.oldTicks = (0, 0, 0)
 
-    self.logger.info("reset done: position and orientation are at the default values")
+    if log:
+      self.logger.info("Reset done: position and orientation are at the default values")

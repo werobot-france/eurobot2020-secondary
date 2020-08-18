@@ -16,7 +16,7 @@ class Switches:
   state = { 'right': False, 'left': False, 'front': False }
   
   def __init__(self, container):
-    self.logger = self.container.get('logger').get('Switches')
+    self.logger = container.get('logger').get('Switches')
     self.arduino = container.get('arduinoSwitches')
     
   def onGroup(self, name, handler):
