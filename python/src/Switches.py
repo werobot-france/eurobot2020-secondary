@@ -16,11 +16,12 @@ class Switches:
   state = { 'right': False, 'left': False, 'front': False }
   
   def __init__(self, container):
+    self.logger = self.container.get('logger').get('Switches')
     self.arduino = container.get('arduinoSwitches')
     
   def onGroup(self, name, handler):
     if name + 'Handler' not in self.handlers:
-      print('WARN: Not valid group name')
+      self.logger.warn('Not valid group name')
       return
     self.handlers[name + 'Handler'] = handler
     
@@ -37,12 +38,13 @@ class Switches:
           break
         name = self.groups[comp[0]]
         state = comp[1] == 'ON'
-        print(name + '=' + str(state))
+        #print(name + '=' + str(state))
         handler = self.handlers[name + 'Handler']
         if handler != None:
           handler(state)
         self.state[name] = state
-        print(self.state)
+        
+        self.logger.debug(state)
         # if comp[0] == 'L':
         #   self.left = state
         # elif comp[0] == 'R':
@@ -52,7 +54,7 @@ class Switches:
 
   def start(self):
     if self.watchStateThread == None:
-      print('> Switches: Started watch thread')
+      self.logger.info('Started watch thread')
       self.watchStateEnabled = True
       self.watchStateThread = Thread(target=self.watchState)
       self.watchStateThread.start()

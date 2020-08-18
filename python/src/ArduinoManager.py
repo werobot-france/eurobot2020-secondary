@@ -5,6 +5,7 @@ class ArduinoManager:
   def __init__(self, container):
     self.instances = []
     self.container = container
+    self.logger = self.container.get('logger').get('ArduinoManager')
   
   def identify(self):
     # get the list of all the ttyUSBX devices in /dev
@@ -21,11 +22,11 @@ class ArduinoManager:
       if 'STEPPER' in name:
         self.container.set('arduinoStepper', device)
         device.setName('STEPPER')
-        print('> ArduinoManager: Found STEPPER')
+        self.logger.info('Found STEPPER')
       if 'SWITCHES' in name:
         self.container.set('arduinoSwitches', device)
         device.setName('SWITCHES')
-        print('> ArduinoManager: Found SWITCHES')
+        self.logger.info('Found SWITCHES')
     return results
 
   def identifySingle(self, device):

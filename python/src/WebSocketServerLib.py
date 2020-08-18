@@ -45,14 +45,13 @@ CLOSE_CONN = 0x8
 class API():
     def run_forever(self):
         try:
-            print("> WebSocketServer: Listening on port %d" % self.port)
+            self.server_started(self.port)
             self.serve_forever()
         except KeyboardInterrupt:
             self.server_close()
-            print("> WebSocketServer: Server terminated.")
         except Exception as e:
-            print("> ERR:WebSocketServer: "+str(e))
-            exit(1)
+            self.server_error(e)
+        self.server_closed()
 
     def new_client(self, client, server):
         pass
@@ -63,14 +62,36 @@ class API():
     def message_received(self, client, server, message):
         pass
 
-    def set_fn_new_client(self, fn):
+    def server_started(self, port):
+        pass
+
+    def server_closed(self):
+        pass
+
+    def server_error(self, exception):
+        pass
+
+    def onNewClient(self, fn):
         self.new_client = fn
 
-    def set_fn_client_left(self, fn):
+    def onClientLeft(self, fn):
         self.client_left = fn
 
-    def set_fn_message_received(self, fn):
+    def onMessageReceived(self, fn):
         self.message_received = fn
+
+    def onServerError(self, fn):
+        self.server_error = fn
+        
+    def onServerStarted(self, fn):
+        self.server_started = fn
+
+    def onServerClosed(self, fn):
+        self.server_closed = fn
+        
+    def closeServer(self):
+        self.server_close()
+        self.server_closed()
 
     def send_message(self, client, msg):
         self._unicast_(client, msg)
@@ -176,17 +197,18 @@ class WebSocketHandler(StreamRequestHandler):
         payload_length = b2 & PAYLOAD_LEN
 
         if not b1:
-            print("> WebSocketServer: Client closed connection.")
+            #print("> WebSocketServer: Client closed connection.")
             self.keep_alive = 0
             return
         if opcode == CLOSE_CONN:
-            print("> WebSocketServer: Client asked to close connection.")
+            #print("> WebSocketServer: Client asked to close connection.")
             self.keep_alive = 0
             return
         if not masked:
-            print("> WebSocketServer: Client must always be masked.")
+            #print("> WebSocketServer: Client must always be masked.")
             self.keep_alive = 0
             return
+        #self.finish()
 
         if payload_length == 126:
             payload_length = struct.unpack(">H", self.rfile.read(2))[0]
@@ -215,13 +237,12 @@ class WebSocketHandler(StreamRequestHandler):
             # this is slower but assures we have UTF-8
             message = try_decode_UTF8(message)
             if not message:
-                print("> WebSocketServer: Can\'t send message, message is not valid UTF-8")
+                #print("> WebSocketServer: Can\'t send message, message is not valid UTF-8")
                 return False
         elif isinstance(message, str) or isinstance(message, unicode):
             pass
         else:
-            print('> WebSocketServer: Can\'t send message, message has to be a string or bytes. Given type is %s' % type(
-                message))
+            #print('> WebSocketServer: Can\'t send message, message has to be a string or bytes. Given type is %s' % type(message))
             return False
 
         header = bytearray()

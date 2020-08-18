@@ -14,13 +14,14 @@ class MotorizedPlatform:
   PWMDriver = None
   
   def __init__(self, container = None):
+    self.logger = self.container.get('logger').get('MotorizedPlatform')
     self.PWMDriver = container.get('PWMDriver')
     if self.PWMDriver != None:
       for slot in self.escSlots:
         # 307 est le signal neutre sous 50 Hz (1.5 / 20 x 4096 = 307)
         self.PWMDriver.setPwm(slot, 0, 307)
     else:
-      print('> Motorized platform is mocked!!')
+      self.logger.warn('mocked!')
       
   def setSpeed(self, values):
     for i in range(len(values)):

@@ -3,11 +3,14 @@ from src.CommandsManager import CommandsManager
 from src.Scripts import Scripts
 from src.Game import Game
 from src.Container import Container
+from src.Logger import LoggerManager
+from time import sleep
 
 container = Container()
 
-server = WebSocketServer(container)
-container.set('websocket', server)
+logger = LoggerManager()
+logger.setLevel('debug')
+container.set('logger', logger)
 
 scripts = Scripts(container)
 container.set('scripts', scripts)
@@ -18,22 +21,16 @@ container.set('game', game)
 commandsManager = CommandsManager(container)
 container.set('commandsManager', commandsManager)
 
-server.start()
 commandsManager.init()
 
-# print('ready \n')
+websocket = WebSocketServer(container)
+container.set('websocket', websocket)
 
-# while True:
-#   toSend = input()
-#   if toSend == 'start':
-#     server.sendData('gameStart', [])
-#   if toSend == 'end':
-#     server.sendData('gameEnd', [])
-#   if toSend == 'pos':
-#     server.sendData('mainPosition', [
-#       input('X?'),
-#       input('Y?'),
-#       input('Theta?')
-#     ])
-#   if toSend == 'foo':
-#     server.sendData('foo', ['bar'])
+try:
+  logger.startClock()
+  websocket.start()
+  while True:
+    sleep(10)
+except KeyboardInterrupt:
+  print('')
+  websocket.stop()

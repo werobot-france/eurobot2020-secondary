@@ -44,13 +44,14 @@ class PositionWatcher:
   positionChangedHandler = None
 
   def __init__(self):
+    self.logger = self.container.get('logger').get('PositionWatcher')
     self.reset()
   
   '''
   This thread will keep updated the left, right and back tick count
   '''
   def watchTicks(self):
-    print("> PositionWatcher: watchTicks thread START!")
+    self.logger.info('watchTicks thread START!')
     while self.watchTicksEnabled:
       leftFetchedState = (self.phaseA.value, self.phaseB.value)
       rightFetchedState = (self.phaseC.value, self.phaseD.value)
@@ -84,7 +85,7 @@ class PositionWatcher:
           self.backTicks += 1
 
         self.backOldState = self.backState
-    print("> PositionWatcher: watchTicks thread QUIT!")
+    self.logger.info("watchTicks thread QUIT!")
 
   '''
   /!\ Call once
@@ -121,11 +122,11 @@ class PositionWatcher:
     return (self.x, self.y, self.theta)
 
   def watchPosition(self):
-    print('> PositionWatcher: watchPosition thread START!')
+    self.logger.info("watchPosition thread QUIT!")
     while self.watchPositionEnabled:
       self.computePosition()
       time.sleep(0.01)
-    print('> PositionWatcher: watchPosition thread QUIT!')
+    self.logger.info("watchPosition thread QUIT!")
 
   def startWatchTicks(self):
     if not self.watchTicksEnabled:
@@ -155,7 +156,7 @@ class PositionWatcher:
     self.watchPositionEnabled = False
     
   def resumeWatchPosition(self):
-    print('> PositionWatcher: resumed!')
+    #print('> PositionWatcher: resumed!')
     self.startWatchPosition()
 
   def setPositionChangedHandler(self, handler):
@@ -190,4 +191,4 @@ class PositionWatcher:
 
     self.oldTicks = (0, 0, 0)
 
-    print("> PositionWatcher: reset")
+    self.logger.info("reset done: position and orientation are at the default values")

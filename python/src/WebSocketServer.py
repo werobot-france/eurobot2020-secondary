@@ -11,10 +11,14 @@ class WebSocketServer:
     self.container = container
     self.mainThread = None
     self.clients = []
+    self.logger = self.container.get('logger').get('WebSocketServer')
     self.server = WebsocketServer(listeningPort, host=listeningHost)
-    self.server.set_fn_new_client(self.onClient)
-    self.server.set_fn_message_received(self.onMessage)
-    self.server.set_fn_client_left(self.onDisconnect)
+    self.server.onNewClient(self.onClient)
+    self.server.onMessageReceived(self.onMessage)
+    self.server.onClientLeft(self.onDisconnect)
+    self.server.onServerError(lambda e: self.logger.error(e))
+    self.server.onServerStarted(lambda p: self.logger.info('Server started on', p))
+    self.server.onServerClosed(lambda: self.logger.info('Server closed'))
     self.game = None
     
   def getAddr(self, client):
@@ -25,7 +29,7 @@ class WebSocketServer:
     if 'identifier' not in client['query']:
       return
     identifier = client['query']['identifier']
-    print("> WebSocket: Got a new client", addr, identifier)
+    self.logger.info('Got a new client', addr, identifier)
 
     # remove old client that own the same identifier
     self.clients = list(filter(lambda c: c['identifier'] != identifier, self.clients))
@@ -40,21 +44,21 @@ class WebSocketServer:
 
   def onDisconnect(self, client, _):
     addr = self.getAddr(client)
-    print("> WebSocket: Client left", addr)
+    self.logger.info('Client left', addr)
 
     # remove the client from the list of connected client
     self.clients = list(filter(lambda c: c['addr'] != addr, self.clients))
     # print('clients', len(self.clients))
 
   def onMessage(self, client, server, message):
-    print("> WebSocket: Got a new message", message)
+    self.logger.debug('New message', message)
     addr = self.getAddr(client)
     # We parse the json of the message
     messageParsed = json.loads(message)
 
     # just a sanity check to check for useless things to check olalalal
     if not ('command' in messageParsed and 'args' in messageParsed):
-      print("> WARN: Olalalalla j'ai vu un message qui n'est pas très très attendu qu'est ce que c'est que ce bordel je me demande vraiment olalal")
+      self.logger.warn('Invalid message format')
       return
 
     command = messageParsed['command']
@@ -84,7 +88,7 @@ class WebSocketServer:
     elif command == 'listSubs':
       # list subs
       c = getClient()
-      print(c['subs'])
+      self.logger.debug('subs asked', c['subs'])
     
     elif command == 'removeSub':
       c = getClient()
@@ -166,5 +170,5 @@ class WebSocketServer:
     self.mainThread.start()
 
   def stop(self):
-    self.server.server_close()
+    self.server.closeServer()
     self.mainThread.stop()

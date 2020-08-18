@@ -39,7 +39,6 @@ if __name__ == '__main__':
   container.set('arduinoManager', arduinoManager)
 
   switches = Switches(container)
-  switches.start()
   container.set('switches', switches)
 
   driver = PWMDriver()
@@ -57,7 +56,6 @@ if __name__ == '__main__':
   # lidar = Lidar(container)
   # lidar.start()
   # container.set('lidar', lidar)
-  ws.start()
   commandsManager.init()
 
   def onPos(x, y, t):
@@ -66,6 +64,8 @@ if __name__ == '__main__':
   positionWatcher.setPositionChangedHandler(onPos)
 
   def app():
+    switches.start()
+    ws.start()
     sleep(1)
     platform.stop()
     sleep(1)
