@@ -42,39 +42,47 @@ class PositionWatcher:
   watchPositionEnabled = False
 
   positionChangedHandler = None
+  
+  ignoreXChanges = False 
 
   def __init__(self, container):
     self.logger = container.get('logger').get('PositionWatcher')
     self.reset(False)
+    
+  def setIgnoreXChanges(self, val):
+    self.logger.info('ignoreXChanges is now at', val)
+    self.ignoreXChanges = val
   
   '''
   This thread will keep updated the left, right and back tick count
   '''
   def watchTicks(self):
-    self.logger.info('watchTicks thread START!')
+    self.logger.info('WatchTicks thread START!')
     while self.watchTicksEnabled:
       leftFetchedState = (self.phaseA.value, self.phaseB.value)
       rightFetchedState = (self.phaseC.value, self.phaseD.value)
       backFetchedState = (self.phaseE.value, self.phaseF.value)
-      if leftFetchedState != self.leftState:
-        self.leftState = leftFetchedState
+      
+      if not self.ignoreXChanges:
+        if leftFetchedState != self.leftState:
+          self.leftState = leftFetchedState
 
-        if self.leftState[0] == self.leftOldState[1]:
-          self.leftTicks -= 1
-        else:
-          self.leftTicks += 1
+          if self.leftState[0] == self.leftOldState[1]:
+            self.leftTicks -= 1
+          else:
+            self.leftTicks += 1
 
-        self.leftOldState = self.leftState
+          self.leftOldState = self.leftState
 
-      if rightFetchedState != self.rightState:
-        self.rightState = rightFetchedState
+        if rightFetchedState != self.rightState:
+          self.rightState = rightFetchedState
 
-        if self.rightState[0] == self.rightOldState[1]:
-          self.rightTicks -= 1
-        else:
-          self.rightTicks += 1
+          if self.rightState[0] == self.rightOldState[1]:
+            self.rightTicks -= 1
+          else:
+            self.rightTicks += 1
 
-        self.rightOldState = self.rightState
+          self.rightOldState = self.rightState
 
       if backFetchedState != self.backState:
         self.backState = backFetchedState
@@ -85,7 +93,7 @@ class PositionWatcher:
           self.backTicks += 1
 
         self.backOldState = self.backState
-    self.logger.info("watchTicks thread QUIT!")
+    self.logger.info("WatchTicks thread QUIT!")
 
   '''
   /!\ Call once
@@ -112,9 +120,11 @@ class PositionWatcher:
       backDistance -= deltaTheta*self.backAxialDistance
       rightDistance -= deltaTheta*self.axialDistance/2
       
+      c = 0 if self.ignoreXChanges else 1
+      
       self.theta += deltaTheta
       self.theta = self.theta % (2*pi)
-      self.x += cos(self.theta) * rightDistance + sin(self.theta) * backDistance
+      self.x += cos(self.theta) * rightDistance + sin(self.theta) * backDistance * c
       self.y += sin(self.theta) * rightDistance - cos(self.theta) * backDistance
       
       if self.positionChangedHandler != None:
@@ -123,11 +133,11 @@ class PositionWatcher:
     return (self.x, self.y, self.theta)
 
   def watchPosition(self):
-    self.logger.info("watchPosition thread QUIT!")
+    self.logger.info("WatchPosition thread START!")
     while self.watchPositionEnabled:
       self.computePosition()
       time.sleep(0.01)
-    self.logger.info("watchPosition thread QUIT!")
+    self.logger.info("WatchPosition thread QUIT!")
 
   def startWatchTicks(self):
     if not self.watchTicksEnabled:
@@ -171,6 +181,19 @@ class PositionWatcher:
 
   def getData(self):
     return (self.x, self.y, self.theta)
+  
+  def setPos(self, x = None, y = None, theta = None):
+    if x != None:
+      self.x = x
+    if y != None:
+      self.y = y
+    if theta != None:
+      self.theta = theta
+    self.logger.info('Now set to', {
+      'x': round(self.x, 0),
+      'y': round(self.y, 0),
+      'theta': round(degrees(self.theta), 2)
+    })
 
   def reset(self, log = True):
     self.x = self.defaultX

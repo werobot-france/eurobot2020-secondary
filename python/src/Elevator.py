@@ -16,10 +16,15 @@ class Elevator:
     
     self.arduino = container.get('arduinoStepper')
 
-  def setClawsAngle(self, angle):
-    self.left.angle = (180 - angle) 
-    self.mid.angle = angle - 5
-    self.right.angle = angle - 5
+  def setClawsAngle(self, angle, selector = None):
+    if selector == None:
+      selector = ['left', 'mid', 'right']
+    if 'left' in selector:
+      self.left.angle = (180 - angle)
+    if 'mid' in selector:
+      self.mid.angle = angle - 5
+    if 'right' in selector:
+      self.right.angle = angle - 5
 
   # def setClawAngle(self, index, angle):
   #   if index == 0:
@@ -29,13 +34,13 @@ class Elevator:
   #   if index == 2:
   #       self.left.angle = 190 - angle
 
-  def open(self):
-    self.setClawsAngle(120)
+  def open(self, selector = None):
+    self.setClawsAngle(120, selector)
 
-  def close(self):
-    self.setClawsAngle(40)
+  def close(self, selector = None):
+    self.setClawsAngle(30, selector)
 
-  def goTo(self, position, speed):
+  def goTo(self, position, speed = 300):
     # pos haute: 500 steps
     # pos basse: 80
     self.arduino.sendCommand(

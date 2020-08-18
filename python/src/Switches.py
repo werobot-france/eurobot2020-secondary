@@ -44,7 +44,7 @@ class Switches:
           handler(state)
         self.state[name] = state
         
-        self.logger.debug(state)
+        self.logger.debug(self.state)
         # if comp[0] == 'L':
         #   self.left = state
         # elif comp[0] == 'R':
