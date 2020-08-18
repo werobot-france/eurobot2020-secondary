@@ -123,3 +123,7 @@ dmypy.json
 
 *.elf
 *.hex
+
+python/logs/*.txt
+
+.main-prompt-history
