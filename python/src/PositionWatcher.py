@@ -103,17 +103,18 @@ class PositionWatcher:
       rightDistance = deltaTicks[1] / 2400 * self.lateralPerimeter
       backDistance = deltaTicks[2] / 2400 * self.backPerimeter
 
-      tb = (leftDistance + rightDistance) / 2
-      deltaTheta = 2 * asin((rightDistance - tb) / self.axialDistance)
+      #tb = (leftDistance + rightDistance) / 2
+      #deltaTheta = 2 * asin((rightDistance - tb) / self.axialDistance)
       # print(self.axialDistance)
-      #deltaTheta = (rightDistance - leftDistance) / self.axialDistance
+      deltaTheta = (rightDistance - leftDistance) / self.axialDistance
       
       backDistance -= deltaTheta*self.backAxialDistance
+      rightDistance -= deltaTheta*self.axialDistance/2
       
       self.theta += deltaTheta
       self.theta = self.theta % (2*pi)
-      self.x += cos(self.theta) * tb + sin(self.theta) * backDistance
-      self.y += sin(self.theta) * tb - cos(self.theta) * backDistance
+      self.x += cos(self.theta) * rightDistance + sin(self.theta) * backDistance
+      self.y += sin(self.theta) * rightDistance - cos(self.theta) * backDistance
       
       if self.positionChangedHandler != None:
         self.positionChangedHandler(self.x, self.y, self.theta)

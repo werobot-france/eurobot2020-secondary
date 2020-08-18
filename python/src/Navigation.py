@@ -84,6 +84,7 @@ class Navigation:
       'y': targetY,
       'a': degrees(targetAngle)
     })
+    print('THRESHOLD DE TES GRANDS MORRT', threshold)
     #self.setSpeed(self.getSpeedFromAngle(targetAngle, speed))
     initialDist = None
     while not self.done:
