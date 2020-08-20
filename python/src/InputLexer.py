@@ -17,10 +17,11 @@ class InputLexer(RegexLexer):
 
     tokens = {
         'root': [
+            (r'^[a-zA-Z]{0,}\S', Token.Name.Builtin),
             (r'[a-zA-Z_]+=', Token.Comment),
+            (r'[a-zA-Z_]', Token.Comment),
             (r'-?[0-9.]+', Token.Number.Integer),
             (r'(true|false|null)\b', Token.Keyword.Constant),
-            (r'[a-zA-Z]{0,}\S', Token.Name.Builtin),
             (r'\s', Token.Text),
         ]
     }

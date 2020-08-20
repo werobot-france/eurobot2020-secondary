@@ -32,17 +32,13 @@ from websocket import create_connection
 
 uri = sys.argv[1] if len(sys.argv) > 1 else "ws://192.168.1.128:8082"
 
-if uri.find('identifier=') == -1:
-  uri += "?identifier=terminal_" + str(random.randint(1000, 9999)) + '_' + str(int(time.time()))
+print('> Using uri:', uri)
 
-print('Using uri:', uri)
+client = WebSocketClient(uri)
+client.start()
 
-ws = create_connection(uri)
-
-ws.send(json.dumps({'command': 'listCommands', 'args': {}}))
-
-res = ws.recv()
-data = list(map (lambda c: c['name'], json.loads(res)['data']))
+data = client.send('listCommands', {}, True)
+data = list(map (lambda c: c['name'], data))
 
 sql_completer = WordCompleter(data, ignore_case=True)
 
@@ -70,9 +66,8 @@ while True:
     break
   else:
     #print('You entered:', text)
-    ws.send(json.dumps({'command': 'execCommand', 'args': {'payload': text}}))
-    res = ws.recv()
-    res = json.dumps(json.loads(res)['data'], indent=4)
+    res = client.send('execCommand', {'payload': text}, True)
+    res = json.dumps(res, indent=4)
     # if res[0:2] == '["' or res[0:2] == '{"':
       
     # else:
@@ -83,5 +78,5 @@ while True:
     print_formatted_text(res, style=style_from_pygments_cls(get_style_by_name(u'monokai')))
     
 print('GoodBye!')
-ws.close()
+client.stop()
 sys.exit()
