@@ -5,8 +5,8 @@ from .ThreadHelper import Thread
 class Arduino:
   name = ''
 
-  def __init__(self, path, baudrate = 9600):
-    self.logger = self.container.get('logger').get('Arduino')
+  def __init__(self, container, path, baudrate = 9600):
+    self.logger = container.get('logger').get('Arduino')
     self.serial = serial.Serial(
       port = path,
       baudrate = baudrate,
@@ -68,9 +68,9 @@ class Arduino:
 
     name = self.name
     if len(name) > 0:
-      name = name + ':'
+      name = name + ': '
 
-    self.logger.debug(name + ' --> ' + command)
+    self.logger.debug(name + '→ ' + command)
     self.serial.write(str.encode(command))
     if 'expectResponse' in options and options['expectResponse']:
       # print(self.serial.is_open)
@@ -85,6 +85,6 @@ class Arduino:
           #print(line)
       #print('response expected:', line)
       
-      self.logger.debug(name + ' <-- ' + line.replace('\n', ''))
+      self.logger.debug(name + '← ' + line.replace('\n', '').replace('\r', ''))
       return line
         

@@ -14,12 +14,22 @@ from src.ArduinoManager import ArduinoManager
 from src.Scripts import Scripts
 from src.Elevator import Elevator
 from time import sleep
+from src.Logger import LoggerManager
 
 if __name__ == '__main__':
   container = Container()
   
+  logger = LoggerManager()
+  logger.setLevel('debug')
+  container.set('logger', logger)
+  root = logger.get('Root')
+
   ws = WebSocketServer(container)
   container.set('websocket', ws)
+
+  arduinoManager = ArduinoManager(container)
+  arduinoManager.identify()
+  container.set('arduinoManager', arduinoManager)
   
   scripts = Scripts(container)
   container.set('scripts', scripts)
@@ -30,13 +40,9 @@ if __name__ == '__main__':
   commandsManager = CommandsManager(container)
   container.set('commandsManager', commandsManager)
 
-  positionWatcher = PositionWatcher()
+  positionWatcher = PositionWatcher(container)
   #positionWatcher.start()
   container.set('positionWatcher', positionWatcher)
-
-  arduinoManager = ArduinoManager(container)
-  arduinoManager.identify()
-  container.set('arduinoManager', arduinoManager)
 
   switches = Switches(container)
   container.set('switches', switches)
@@ -69,9 +75,10 @@ if __name__ == '__main__':
     sleep(1)
     platform.stop()
     sleep(1)
-    print('> App: READY, all intefaces intialized')
     positionWatcher.reset()
     positionWatcher.start()
+    
+    root.info('App ready')
     # sleep(1)
     # navigation.goTo({'x':600, 'y':600, 'orientation':pi })
     # input('You confirm?')
@@ -82,7 +89,8 @@ if __name__ == '__main__':
   try:
     app()
   except KeyboardInterrupt:
-    print("KeyboardInterrupt")
+    print('')
+    root.error('KeyboardInterrupt: App will shutdown in a few moments')
     switches.stop()
     scripts.stop()
     navigation.stop()

@@ -94,9 +94,11 @@ class LoggerManager:
     if self.startedAt != None:
       elapsed = time.time() - self.startedAt
     else:
-      elapsed = -1
+      elapsed = 0
 
-    elapsed = str(round(elapsed, 3)).zfill(8)
+    elapsed = str(round(elapsed, 3)).zfill(7)
+    
+    name = name.ljust(16)
     
     line = TerminalColors.GRAY + elapsed + ' - ' +TerminalColors.ENDC 
     line += level[1] + level[0] + TerminalColors.ENDC + TerminalColors.GRAY + ' - ' + TerminalColors.ENDC 

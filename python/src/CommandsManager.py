@@ -35,6 +35,18 @@ class CommandsManager:
         'handler': self.reset
       },
       {
+        'name': 'setPos',
+        'description': "Set arbitrary position",
+        'arguments': [['x', True], ['y', True], ['theta', True]],
+        'handler': self.setPos
+      },
+      {
+        'name': 'ignoreXChanges',
+        'description': "Arbitrary disable x encoders",
+        'arguments': [['val', True]],
+        'handler': self.toggleIgnoreXChanges
+      },
+      {
         'name': 'goto',
         'description': "It's your slave!",
         'arguments': goToArgs,
@@ -73,7 +85,7 @@ class CommandsManager:
       {
         'name': 'claws',
         'description': 'Set angle of claws servo',
-        'arguments': [['angle', True]],
+        'arguments': [['angle', True], ['select', False]],
         'handler': self.claws
       },
       {
@@ -208,19 +220,22 @@ class CommandsManager:
     return 'OK'
 
   def claws(self, components):
+    selector = None
+    if 'select' in components:
+      selector = eval(components['select'])
     if components['angle'] == 'open':
-      self.elevator.open()
+      self.elevator.open(selector)
     elif components['angle'] == 'close':
-      self.elevator.close()
+      self.elevator.close(selector)
     else: 
-      self.elevator.setClawsAngle(int(components['angle']))
+      self.elevator.setClawsAngle(int(components['angle']), selector)
     return 'OK'
 
   def stop(self, _):
     # will stop every thread in the world
+    self.scripts.stop()
     self.navigation.stop()
     self.platform.stop()
-    self.scripts.stop()
     self.elevator.stop()
     
     
@@ -255,6 +270,15 @@ class CommandsManager:
     data = list(self.positionWatcher.getPos())
     data[2] = [data[2], degrees(data[2])]
     return data
+  
+  def setPos(self, args):
+    args = self.parseAngleArgs(args)
+    self.positionWatcher.setPos(args['x'], args['y'], args['theta'])
+    return 'OK'
+  
+  def toggleIgnoreXChanges(self, args):
+    self.positionWatcher.setIgnoreXChanges(not self.positionWatcher.ignoreXChanges)
+    return 'OK'
   
   def example(self, components):
     return 'OK'
