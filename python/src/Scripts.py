@@ -2,6 +2,7 @@
 import os
 import sys
 from .ThreadHelper import Thread
+import imp
 
 class Scripts:
   def __init__(self, container):
@@ -15,8 +16,9 @@ class Scripts:
   def run(self, name):
     if (name + '.py') not in os.listdir('src/scripts'):
       return "Invalid script name"
-    module = list(map(__import__, ['src.scripts.' + name]))[0].__dict__['scripts'].__dict__[name].__dict__[name]
-    script = module(self.container)
+    module = list(map(__import__, ['src.scripts.' + name]))[0].__dict__['scripts'].__dict__[name]
+    imp.reload(module)
+    script = module.__dict__[name](self.container)
     self.logger.info('Starting', name, 'script')
     self.scriptThread = Thread(target=script.run)
     self.scriptThread.start()
