@@ -227,6 +227,8 @@ class CommandsManager:
       self.elevator.open(selector)
     elif components['angle'] == 'close':
       self.elevator.close(selector)
+    elif components['angle'] == 'sleep':
+      self.elevator.sleep(selector)
     else: 
       self.elevator.setClawsAngle(int(components['angle']), selector)
     return 'OK'

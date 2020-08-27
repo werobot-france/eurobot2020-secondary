@@ -40,6 +40,12 @@ class Elevator:
   def close(self, selector = None):
     self.setClawsAngle(30, selector)
 
+  def sleep(self, selector = None):
+    self.setClawsAngle(50, selector)
+    
+  # top
+  # lighthouse enable: 40
+
   def goTo(self, position, speed = 300):
     # pos haute: 500 steps
     # pos basse: 80
