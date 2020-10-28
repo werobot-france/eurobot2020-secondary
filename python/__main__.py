@@ -12,6 +12,7 @@ from src.WebSocketServer import WebSocketServer
 from src.CommandsManager import CommandsManager
 from src.ArduinoManager import ArduinoManager
 from src.Scripts import Scripts
+from src.Schlager import Schlager
 from src.Elevator import Elevator
 from time import sleep
 from src.Logger import LoggerManager
@@ -59,6 +60,9 @@ if __name__ == '__main__':
   elevator = Elevator(container)
   container.set('elevator', elevator)
 
+  schlager = Schlager(container)
+  container.set('schlager', schlager)
+
   # lidar = Lidar(container)
   # lidar.start()
   # container.set('lidar', lidar)
@@ -79,10 +83,10 @@ if __name__ == '__main__':
     positionWatcher.start()
     
     root.info('App ready')
-    # sleep(1)
-    # navigation.goTo({'x':600, 'y':600, 'orientation':pi })
-    # input('You confirm?')
-    # navigation.goTo({ 'x': 979, 'y': 1500, 'orientation': pi, 'speed': 40 })
+    #sleep(1)
+    #navigation.goTo(x=600.0, y=600.0, theta=pi)
+    #input('You confirm?')
+    #navigation.goTo({ 'x': 979, 'y': 1500, 'orientation': pi, 'speed': 40 })
     while True:
       sleep(100)
 

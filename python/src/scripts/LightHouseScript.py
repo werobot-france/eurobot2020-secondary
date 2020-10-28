@@ -12,6 +12,7 @@ class LightHouseScript(API):
     self.elevator.goTo(180, 600)
     self.elevator.sleep()
     
+    ## DEPLOY LIGHTHOUSE
     # click with front
     self.navigation.goTo(x=-500, y=159, theta=pi, stopOn='front', speed=75)
     
@@ -26,3 +27,6 @@ class LightHouseScript(API):
     self.elevator.goTo(40)
     sleep(0.2)
     self.elevator.goTo(400)
+    sleep(0.2)
+    ## END OF LIGHTHOUSE DEPLOYMENT
+    

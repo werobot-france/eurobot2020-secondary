@@ -7,7 +7,9 @@ class CommandsManager:
     goToArgs = [
       ['x', True], ['y', True],
       ['theta', False],
-      ['speed', False], ['stopOn', False]
+      ['speed', False],
+      ['stopOn', False],
+      ['stopOnSlip', False]
     ]
     self.commands = [
       {
@@ -99,7 +101,13 @@ class CommandsManager:
         'description': 'Will orient to the desired angle',
         'arguments': [['theta', True], ['speed', False]],
         'handler': self.orientTo
-      }
+      },
+      {
+        'name': 'clawsAngles',
+        'description': 'Set pos of the claw',
+        'arguments': [['l', True], ['m', True], ['r', True]],
+        'handler': self.clawsAngles
+      },
     ]
     def filter(item):
       item.pop('handler', None)
@@ -206,7 +214,8 @@ class CommandsManager:
     return self.scripts.list()
   
   def execScript(self, components):
-    return self.scripts.run(components['name'])
+    self.scripts.run(components['name'])
+    return 'OK'
 
   def elevator(self, components):
     if 'speed' not in components:
@@ -229,6 +238,8 @@ class CommandsManager:
       self.elevator.close(selector)
     elif components['angle'] == 'sleep':
       self.elevator.sleep(selector)
+    elif components['angle'] == 'lighthouse':
+      self.elevator.lighthouse(selector)
     else: 
       self.elevator.setClawsAngle(int(components['angle']), selector)
     return 'OK'
@@ -248,6 +259,11 @@ class CommandsManager:
     if 'theta' in args:
       args['theta'] = eval(str(args['theta']), { 'pi': pi })
     return args
+  
+  
+  def clawsAngles(self, components):
+    self.elevator.setAll([components['l'], components['m'], components['r']])
+    return 'OK'
   
   def goTo(self, args):
     args = self.parseAngleArgs(args)

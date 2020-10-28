@@ -71,6 +71,14 @@ class Navigation:
     speed = 40 if 'speed' not in args else args['speed']
     threshold = 5 if 'threshold' not in args else args['threshold']
     stopOn = None if 'stopOn' not in args else args['stopOn']
+  
+    # stop on slips marche comme  ça:
+    # on regarde tout les 10 cycles de combien le robot à avancé avec deltaDist
+    # si la dist avancé pendant ces 10 derniers cycles est infé à un threshold on se stoppe
+    # quand stopOnSlip est à True, il n'y a plus de check pour savoir si le robot est arrivé
+    # WARNING: VERY UNSTABLE WHEN TRAVELING BIG DISTANCES
+    stopOnSlip = False if 'stopOnSlip' not in args else args['stopOnSlip']
+    
     # targetX, targetY, speed=50, threshold=5, orientation=None
 
     #self.positionWatcher.pauseWatchPosition()
@@ -84,9 +92,15 @@ class Navigation:
       'y': targetY,
       'theta': degrees(orientation),
       'stopOn': stopOn,
+      'stopOnSlip': stopOnSlip,
       'speed': speed,
       'threshold': threshold
     })
+    
+    lastSlipPeriodDist = None
+    slipCheckThreshold = 5
+    slipCheckCount = 0
+
     #self.setSpeed(self.getSpeedFromAngle(targetAngle, speed))
     initialDist = None
     while not self.done:
@@ -103,6 +117,17 @@ class Navigation:
 
       if initialDist == None:
         initialDist = dist
+
+      # Check if a slip is happening
+      if stopOnSlip:
+        slipCheckCount += 1
+      if slipCheckCount >= 3:
+        if lastSlipPeriodDist != None:
+          if abs(lastSlipPeriodDist - dist) < slipCheckThreshold:
+            self.done = True
+        slipCheckCount = 0
+        lastSlipPeriodDist = dist
+
       if dist <= threshold:
         self.done = True
       else:

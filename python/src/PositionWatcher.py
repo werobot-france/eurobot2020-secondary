@@ -43,15 +43,23 @@ class PositionWatcher:
 
   positionChangedHandler = None
   
-  ignoreXChanges = False 
+  ignoreXChanges = False
+  
+  ignoreYChanges = False
 
   def __init__(self, container):
     self.logger = container.get('logger').get('PositionWatcher')
     self.reset(False)
     
   def setIgnoreXChanges(self, val):
+    print('ignoreXChanges is now at', val)
     self.logger.info('ignoreXChanges is now at', val)
     self.ignoreXChanges = val
+  
+  def setIgnoreYChanges(self, val):
+    print('ignoreYChanges is now at', val)
+    self.logger.info('ignoreYChanges is now at', val)
+    self.ignoreYChanges = val
   
   '''
   This thread will keep updated the left, right and back tick count
@@ -84,15 +92,16 @@ class PositionWatcher:
 
           self.rightOldState = self.rightState
 
-      if backFetchedState != self.backState:
-        self.backState = backFetchedState
+      if not self.ignoreYChanges:
+        if backFetchedState != self.backState:
+          self.backState = backFetchedState
 
-        if self.backState[0] == self.backOldState[1]:
-          self.backTicks -= 1
-        else:
-          self.backTicks += 1
+          if self.backState[0] == self.backOldState[1]:
+            self.backTicks -= 1
+          else:
+            self.backTicks += 1
 
-        self.backOldState = self.backState
+          self.backOldState = self.backState
     self.logger.info("WatchTicks thread QUIT!")
 
   '''
